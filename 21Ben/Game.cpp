@@ -2,124 +2,174 @@
 #include <sstream>
 
 Game::Game(float width, float height)
-    : player("Player", 200), roundInProgress(false)
+    : player("Player", 200), roundInProgress(false), screenWidth(width), screenHeight(height)
 {
     if (!font.loadFromFile("assets/ttfFont.ttf")) {
         std::cerr << "Font not found!" << std::endl;
     }
 
-    // Create "Skip" button.
-    sf::Text skipButton;
-    skipButton.setFont(font);
-    skipButton.setString("Skip");
-    skipButton.setCharacterSize(50);
-    skipButton.setFillColor(sf::Color::White);
-    skipButton.setPosition(sf::Vector2f(width - 120.f, 10.f)); // Adjust as needed.
-    menuOptions.push_back(skipButton);
+    // Load all textures (cards and backgrounds)
+    textures.loadTextures();
 
-    // Setup action buttons for Hit and Stand.
+    // Setup the Deal button (shown when round is not active).
+    dealButton.setFont(font);
+    dealButton.setString("Deal");
+    dealButton.setCharacterSize(50);
+    dealButton.setFillColor(sf::Color::White);
+    dealButton.setPosition(sf::Vector2f(screenWidth - 120.f, 10.f));
+
+    // Setup action buttons (shown during an active round).
     hitButton.setFont(font);
     hitButton.setString("Hit");
     hitButton.setCharacterSize(40);
     hitButton.setFillColor(sf::Color::White);
-    hitButton.setPosition(sf::Vector2f(50.f, height - 120.f));
+    hitButton.setPosition(sf::Vector2f(50.f, screenHeight - 120.f));
 
     standButton.setFont(font);
     standButton.setString("Stand");
     standButton.setCharacterSize(40);
     standButton.setFillColor(sf::Color::White);
-    standButton.setPosition(sf::Vector2f(200.f, height - 120.f));
+    standButton.setPosition(sf::Vector2f(200.f, screenHeight - 120.f));
 
-    // Setup display texts for player's hand, dealer's hand, and message.
-    playerHandText.setFont(font);
-    playerHandText.setCharacterSize(30);
-    playerHandText.setFillColor(sf::Color::White);
-    playerHandText.setPosition(50.f, height - 200.f);
+    doubleButton.setFont(font);
+    doubleButton.setString("Double");
+    doubleButton.setCharacterSize(40);
+    doubleButton.setFillColor(sf::Color::White);
+    doubleButton.setPosition(sf::Vector2f(350.f, screenHeight - 120.f));
 
-    dealerHandText.setFont(font);
-    dealerHandText.setCharacterSize(30);
-    dealerHandText.setFillColor(sf::Color::White);
-    dealerHandText.setPosition(50.f, 50.f);
+    splitButton.setFont(font);
+    splitButton.setString("Split");
+    splitButton.setCharacterSize(40);
+    splitButton.setFillColor(sf::Color::White);
+    splitButton.setPosition(sf::Vector2f(520.f, screenHeight - 120.f));
 
+    // Setup message text.
     messageText.setFont(font);
     messageText.setCharacterSize(40);
     messageText.setFillColor(sf::Color::Yellow);
-    messageText.setPosition(width / 2.f - 200.f, height / 2.f - 50.f);
+    messageText.setPosition(screenWidth / 2.f - 200.f, screenHeight / 2.f - 50.f);
+
+    // For simplicity, place an initial bet.
+    player.placeBet(10);
 
     // Start the first round.
     startNewRound();
 }
 
 void Game::startNewRound() {
-    // Reset deck, dealer, and player.
     deck.reset();
     dealer.clear();
     player.reset();
+    player.placeBet(10);
     roundInProgress = true;
-    message = "Click Hit to draw a card, or Stand to finish your turn.";
+    message = "";
 
     // Deal initial cards: two to the player, two to the dealer.
     player.hit(deck);
     player.hit(deck);
     dealer.hit(deck); // visible dealer card.
     dealer.hit(deck); // hidden card.
+    updateDisplay();
 
-    updateDisplayText();
+    // If the player's current hand is a natural blackjack, immediately process dealer play.
+    if (player.getCurrentHand().isBlackjack()) {
+        finishRound();
+    }
 }
 
-void Game::updateDisplayText() {
-    // Update player's hand display.
-    std::ostringstream pStream;
-    pStream << player.toString();
-    playerHandText.setString(pStream.str());
+void Game::updateDisplay() {
+    // Clear previous sprites.
+    playerCardSprites.clear();
+    dealerCardSprites.clear();
 
-    // Update dealer's hand display.
-    std::ostringstream dStream;
-    if (roundInProgress) {
-        // Show only the first dealer card.
-        std::string fullDealerHand = dealer.getHand().toString();
-        size_t pos = fullDealerHand.find(",");
-        if (pos != std::string::npos) {
-            dStream << "Dealer's Hand: " << fullDealerHand.substr(0, pos) << ", [Hidden]";
+    // Update player's card sprites for each hand (displayed in separate rows).
+    const auto& playerHands = player.getHands();
+    float verticalMargin = 20.f;
+    for (size_t h = 0; h < playerHands.size(); h++) {
+        const auto& cards = playerHands[h].getCards();
+        size_t pCount = cards.size();
+        float totalWidth = pCount * (cardWidth * scaleFactor) + (pCount - 1) * cardMargin;
+        float startX = (screenWidth - totalWidth) / 2.f;
+        float y = 500.f + h * ((cardHeight * scaleFactor) + verticalMargin);
+        for (size_t i = 0; i < pCount; i++) {
+            sf::Sprite sprite;
+            sprite.setTexture(getCardTexture(cards[i]));
+            sprite.setPosition(startX + i * ((cardWidth * scaleFactor) + cardMargin), y);
+            sprite.setScale(scaleFactor, scaleFactor);
+            playerCardSprites.push_back(sprite);
         }
-        else {
-            dStream << "Dealer's Hand: " << fullDealerHand;
-        }
+    }
+
+    // Update dealer's card sprites.
+    const auto& dCards = dealer.getHand().getCards();
+    size_t dCount = dCards.size();
+    if (roundInProgress && dCount >= 2) {
+        float totalDealerWidth = 2 * (cardWidth * scaleFactor) + cardMargin;
+        float startXDealer = (screenWidth - totalDealerWidth) / 2.f;
+        // Show first dealer card:
+        sf::Sprite sprite;
+        sprite.setTexture(getCardTexture(dCards[0]));
+        sprite.setPosition(startXDealer, 50.f);
+        sprite.setScale(scaleFactor, scaleFactor);
+        dealerCardSprites.push_back(sprite);
+        // Second card hidden:
+        sf::Sprite hiddenSprite;
+        hiddenSprite.setTexture(textures.backOfCard);
+        hiddenSprite.setPosition(startXDealer + (cardWidth * scaleFactor) + cardMargin, 50.f);
+        hiddenSprite.setScale(scaleFactor, scaleFactor);
+        dealerCardSprites.push_back(hiddenSprite);
     }
     else {
-        dStream << "Dealer's Hand: " << dealer.getHand().toString();
+        float totalDealerWidth = dCount * (cardWidth * scaleFactor) + (dCount - 1) * cardMargin;
+        float startXDealer = (screenWidth - totalDealerWidth) / 2.f;
+        for (size_t i = 0; i < dCount; i++) {
+            sf::Sprite sprite;
+            sprite.setTexture(getCardTexture(dCards[i]));
+            sprite.setPosition(startXDealer + i * ((cardWidth * scaleFactor) + cardMargin), 50.f);
+            sprite.setScale(scaleFactor, scaleFactor);
+            dealerCardSprites.push_back(sprite);
+        }
     }
-    dealerHandText.setString(dStream.str());
 
     // Update message text.
     messageText.setString(message);
 }
 
 void Game::finishRound() {
-    // Process dealer turn.
     int dealerTotal = dealer.dealerTurn(deck);
-    int playerTotal = player.getHand().getTotalValue();
-
-    if (player.isBusted()) {
-        message = "You busted! Click Skip to restart.";
+    std::string outcomes;
+    const auto& hands = player.getHands();
+    for (size_t i = 0; i < hands.size(); i++) {
+        int handTotal = hands[i].getTotalValue();
+        outcomes += "Hand " + std::to_string(i + 1) + ": ";
+        if (hands[i].isBlackjack()) {
+            outcomes += "Blackjack!";
+            // Natural blackjack pays 3:2.
+            player.addWinnings(static_cast<int>(player.getCurrentBet() * 2.5));
+        }
+        else if (handTotal > 21) {
+            outcomes += "Busted";
+        }
+        else if (dealerTotal > 21) {
+            outcomes += "Win";
+            player.addWinnings(player.getCurrentBet() * 2);
+        }
+        else if (handTotal > dealerTotal) {
+            outcomes += "Win";
+            player.addWinnings(player.getCurrentBet() * 2);
+        }
+        else if (handTotal == dealerTotal) {
+            outcomes += "Push";
+            player.addWinnings(player.getCurrentBet());
+        }
+        else {
+            outcomes += "Lose";
+        }
+        outcomes += "\n";
     }
-    else if (dealerTotal > 21) {
-        message = "Dealer busted! You win! Click Skip to restart.";
-        player.addWinnings(player.getCurrentBet() * 2);
-    }
-    else if (playerTotal > dealerTotal) {
-        message = "You win! Click Skip to restart.";
-        player.addWinnings(player.getCurrentBet() * 2);
-    }
-    else if (playerTotal == dealerTotal) {
-        message = "Push! Click Skip to restart.";
-        player.addWinnings(player.getCurrentBet()); // return bet.
-    }
-    else {
-        message = "You lose! Click Skip to restart.";
-    }
+    message = outcomes + "Click Deal to restart.";
     roundInProgress = false;
-    updateDisplayText();
+    updateDisplay();
 }
 
 bool Game::isTextClicked(const sf::Text& text, sf::RenderWindow& window) {
@@ -127,77 +177,144 @@ bool Game::isTextClicked(const sf::Text& text, sf::RenderWindow& window) {
     return text.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos));
 }
 
-void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
-    // Handle menu option (Skip) with mouse movement and click.
-    if (event.type == sf::Event::MouseMoved) {
-        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-        for (std::size_t i = 0; i < menuOptions.size(); ++i) {
-            if (menuOptions[i].getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
-                menuOptions[i].setFillColor(sf::Color::Yellow);
-                selectedMenuIndex = i;
-            }
-            else {
-                menuOptions[i].setFillColor(sf::Color::White);
-            }
-        }
-        // Highlight action buttons.
-        if (isTextClicked(hitButton, window)) {
-            hitButton.setFillColor(sf::Color::Yellow);
-            hitHovered = true;
-        }
-        else {
-            hitButton.setFillColor(sf::Color::White);
-            hitHovered = false;
-        }
-        if (isTextClicked(standButton, window)) {
-            standButton.setFillColor(sf::Color::Yellow);
-            standHovered = true;
-        }
-        else {
-            standButton.setFillColor(sf::Color::White);
-            standHovered = false;
+sf::Texture& Game::getCardTexture(const Card& card) {
+    if (card.getSuit() == Suit::Hearts) {
+        switch (card.getRank()) {
+        case Rank::Two:   return textures.hearts2Texture;
+        case Rank::Three: return textures.hearts3Texture;
+        case Rank::Four:  return textures.hearts4Texture;
+        case Rank::Five:  return textures.hearts5Texture;
+        case Rank::Six:   return textures.hearts6Texture;
+        case Rank::Seven: return textures.hearts7Texture;
+        case Rank::Eight: return textures.hearts8Texture;
+        case Rank::Nine:  return textures.hearts9Texture;
+        case Rank::Ten:   return textures.hearts10Texture;
+        case Rank::Jack:  return textures.heartsjackTexture;
+        case Rank::Queen: return textures.heartsqueenTexture;
+        case Rank::King:  return textures.heartskingTexture;
+        case Rank::Ace:   return textures.heartsaceTexture;
         }
     }
+    else if (card.getSuit() == Suit::Diamonds) {
+        switch (card.getRank()) {
+        case Rank::Two:   return textures.diamonds2Texture;
+        case Rank::Three: return textures.diamonds3Texture;
+        case Rank::Four:  return textures.diamonds4Texture;
+        case Rank::Five:  return textures.diamonds5Texture;
+        case Rank::Six:   return textures.diamonds6Texture;
+        case Rank::Seven: return textures.diamonds7Texture;
+        case Rank::Eight: return textures.diamonds8Texture;
+        case Rank::Nine:  return textures.diamonds9Texture;
+        case Rank::Ten:   return textures.diamonds10Texture;
+        case Rank::Jack:  return textures.diamondsjackTexture;
+        case Rank::Queen: return textures.diamondsqueenTexture;
+        case Rank::King:  return textures.diamondskingTexture;
+        case Rank::Ace:   return textures.diamondsaceTexture;
+        }
+    }
+    else if (card.getSuit() == Suit::Spades) {
+        switch (card.getRank()) {
+        case Rank::Two:   return textures.spades2Texture;
+        case Rank::Three: return textures.spades3Texture;
+        case Rank::Four:  return textures.spades4Texture;
+        case Rank::Five:  return textures.spades5Texture;
+        case Rank::Six:   return textures.spades6Texture;
+        case Rank::Seven: return textures.spades7Texture;
+        case Rank::Eight: return textures.spades8Texture;
+        case Rank::Nine:  return textures.spades9Texture;
+        case Rank::Ten:   return textures.spades10Texture;
+        case Rank::Jack:  return textures.spadesjackTexture;
+        case Rank::Queen: return textures.spadesqueenTexture;
+        case Rank::King:  return textures.spadeskingTexture;
+        case Rank::Ace:   return textures.spadesaceTexture;
+        }
+    }
+    else if (card.getSuit() == Suit::Clubs) {
+        switch (card.getRank()) {
+        case Rank::Two:   return textures.clubs2Texture;
+        case Rank::Three: return textures.clubs3Texture;
+        case Rank::Four:  return textures.clubs4Texture;
+        case Rank::Five:  return textures.clubs5Texture;
+        case Rank::Six:   return textures.clubs6Texture;
+        case Rank::Seven: return textures.clubs7Texture;
+        case Rank::Eight: return textures.clubs8Texture;
+        case Rank::Nine:  return textures.clubs9Texture;
+        case Rank::Ten:   return textures.clubs10Texture;
+        case Rank::Jack:  return textures.clubsjackTexture;
+        case Rank::Queen: return textures.clubsqueenTexture;
+        case Rank::King:  return textures.clubskingTexture;
+        case Rank::Ace:   return textures.clubsaceTexture;
+        }
+    }
+    return textures.backOfCard;
+}
 
+void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
     if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
-        // Check Skip button.
-        if (!menuOptions.empty() && isTextClicked(menuOptions[selectedMenuIndex], window)) {
-            // Restart the round if Skip is clicked.
-            startNewRound();
-        }
-        // Handle Hit button.
-        if (isTextClicked(hitButton, window) && roundInProgress) {
-            player.hit(deck);
-            if (player.isBusted()) {
-                message = "You busted! Click Skip to restart.";
-                roundInProgress = false;
+        if (!roundInProgress) {
+            if (isTextClicked(dealButton, window)) {
+                startNewRound();
             }
-            updateDisplayText();
         }
-        // Handle Stand button.
-        if (isTextClicked(standButton, window) && roundInProgress) {
-            finishRound();
+        else {
+            // Check action buttons.
+            if (isTextClicked(hitButton, window)) {
+                player.hit(deck);
+                if (player.isBusted()) {
+                    message = "Hand " + std::to_string(player.getHands().size()) + " busted! ";
+                    if (!player.advanceHand())
+                        finishRound();
+                }
+                updateDisplay();
+            }
+            else if (isTextClicked(standButton, window)) {
+                if (!player.advanceHand())
+                    finishRound();
+                updateDisplay();
+            }
+            else if (isTextClicked(doubleButton, window)) {
+                if (player.getCurrentBet() <= player.getBalance()) {
+                    player.placeBet(player.getCurrentBet()); // Deduct additional bet.
+                    player.hit(deck);
+                    if (!player.advanceHand())
+                        finishRound();
+                }
+                updateDisplay();
+            }
+            else if (isTextClicked(splitButton, window)) {
+                if (player.split()) {
+                    // After splitting, hit the current (now split) hand.
+                    player.hit(deck);
+                    updateDisplay();
+                }
+                else {
+                    message = "Cannot split this hand.";
+                    updateDisplay();
+                }
+            }
         }
     }
 }
 
 void Game::draw(sf::RenderWindow& window) {
-    // Draw menu options (Skip button).
-    for (const auto& option : menuOptions) {
-        window.draw(option);
+    if (!roundInProgress) {
+        window.draw(dealButton);
     }
-    // Draw action buttons.
-    window.draw(hitButton);
-    window.draw(standButton);
-    // Draw texts: player's hand, dealer's hand, and messages.
-    window.draw(playerHandText);
-    window.draw(dealerHandText);
+    else {
+        window.draw(hitButton);
+        window.draw(standButton);
+        window.draw(doubleButton);
+        window.draw(splitButton);
+    }
+    for (const auto& sprite : dealerCardSprites) {
+        window.draw(sprite);
+    }
+    for (const auto& sprite : playerCardSprites) {
+        window.draw(sprite);
+    }
     window.draw(messageText);
 }
 
 Game::Option Game::getSelectedOption() const {
-    if (selectedMenuIndex == 0) {
-        return Option::SKIP;
-    }
     return Option::NONE;
 }

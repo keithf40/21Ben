@@ -63,17 +63,38 @@ bool Hand::isSoft() const {
     return aceCount > 0;
 }
 
-// Returns true if the first two cards form a pair (same rank or same value)
+// Returns true if the first two cards form a pair (by rank or by 10-value for face cards)
 bool Hand::isPair() const {
     if (cards.size() == 2) {
         int cardOne = static_cast<int>(cards[0].getRank());
         int cardTwo = static_cast<int>(cards[1].getRank());
-
-        // Face cards count as 10 for pair logic
+        // For pair logic, face cards count as 10.
         if (cardOne > 10 && cardOne <= 13) cardOne = 10;
         if (cardTwo > 10 && cardTwo <= 13) cardTwo = 10;
-
         return cardOne == cardTwo;
     }
     return false;
+}
+
+// Returns the vector of cards
+const std::vector<Card>& Hand::getCards() const {
+    return cards;
+}
+
+// Removes the last card from the hand and adjusts totalCount and aceCount accordingly.
+void Hand::removeLastCard() {
+    if (!cards.empty()) {
+        Card last = cards.back();
+        int cardValue = static_cast<int>(last.getRank());
+        if (last.getRank() >= Rank::Jack && last.getRank() <= Rank::King) {
+            cardValue = 10;
+        }
+        else if (last.getRank() == Rank::Ace) {
+            cardValue = 11;
+            if (aceCount > 0)
+                aceCount--;
+        }
+        totalCount -= cardValue;
+        cards.pop_back();
+    }
 }

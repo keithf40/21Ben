@@ -8,8 +8,8 @@
 class Hand {
 private:
     std::vector<Card> cards;  // Cards currently in the hand
-    char totalCount = 0;      // Running total value of the hand
-    char aceCount = 0;        // Number of Aces in the hand
+    int totalCount = 0;       // Running total value of the hand
+    int aceCount = 0;         // Number of Aces in the hand
 
 public:
     // Constructor
@@ -36,6 +36,12 @@ public:
     // Returns true if the hand is "soft" (contains Ace counted as 11)
     bool isSoft() const;
 
-    // Returns true if the hand is a pair (first two cards have same rank)
+    // Returns true if the hand is a pair (first two cards have same rank or same 10-value for face cards)
     bool isPair() const;
+
+    // Returns the vector of cards (for image display)
+    const std::vector<Card>& getCards() const;
+
+    // Removes the last card from the hand (used during split)
+    void removeLastCard();
 };
