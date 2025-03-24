@@ -1,51 +1,55 @@
 #include "PlayMenu.h"
+#include <iostream>
 
 // Constructor - initializes the "Back" and "Play" buttons
-PlayMenu::PlayMenu(float width, float height) {
+PlayMenu::PlayMenu(float width, float height) : selectedIndex(0) {
     // Load the font used for menu text
-    if (!font.openFromFile("assets/ttfFont.ttf")) {
-        std::cout << "Font not found!" << std::endl;
+    if (!font.loadFromFile("assets/ttfFont.ttf")) {
+        std::cerr << "Font not found!" << std::endl;
     }
 
     // Create "Back" button
-    sf::Text backButton(font, "Back", 50);
+    sf::Text backButton;
+    backButton.setFont(font);
+    backButton.setString("Back");
+    backButton.setCharacterSize(50);
     backButton.setFillColor(sf::Color::White);
     backButton.setPosition(sf::Vector2f(10.f, height - 70.f));
 
     // Create "Play" button
-    sf::Text playButton(font, "Play", 50);
+    sf::Text playButton;
+    playButton.setFont(font);
+    playButton.setString("Play");
+    playButton.setCharacterSize(50);
     playButton.setFillColor(sf::Color::White);
-    playButton.setPosition(sf::Vector2f(width / 2.1f, height - (height / 2.5f)));
+    playButton.setPosition(sf::Vector2f(width / 2.1f, height / 2.5f));
 
-    // Add both buttons to the list of options
+    // Add buttons to list
     options.push_back(backButton);
     options.push_back(playButton);
-
-    // Set default selected index
-    selectedIndex = 0;
 }
 
 // Draw all the buttons in the play menu
 void PlayMenu::draw(sf::RenderWindow& window) {
-    for (int i = 0; i < options.size(); i++) {
-        window.draw(options[i]);
+    for (const auto& option : options) {
+        window.draw(option);
     }
 }
 
 // Handle mouse movement to update highlighted button
-void PlayMenu::handleEvent(sf::Event event, sf::RenderWindow& window) {
-    if (event.is<sf::Event::MouseMoved>()) {
+void PlayMenu::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
+    if (event.type == sf::Event::MouseMoved) {
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-        for (int i = 0; i < options.size(); i++) {
+        for (std::size_t i = 0; i < options.size(); ++i) {
             if (options[i].getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
-                // Reset previously selected
-                options[selectedIndex].setFillColor(sf::Color::White);
-                // Highlight current hover
-                selectedIndex = i;
-                options[selectedIndex].setFillColor(sf::Color::Yellow);
+                if (i != selectedIndex) {
+                    options[selectedIndex].setFillColor(sf::Color::White); // reset old
+                    selectedIndex = i;
+                    options[selectedIndex].setFillColor(sf::Color::Yellow); // highlight new
+                }
             }
             else if (i != selectedIndex) {
-                options[i].setFillColor(sf::Color::White);
+                options[i].setFillColor(sf::Color::White); // reset unhovered
             }
         }
     }

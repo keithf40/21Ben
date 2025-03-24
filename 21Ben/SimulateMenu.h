@@ -18,15 +18,15 @@ public:
     void draw(sf::RenderWindow& window);
 
     // Handle mouse interaction events
-    void handleEvent(sf::Event event, sf::RenderWindow& window);
+    void handleEvent(const sf::Event& event, sf::RenderWindow& window);
 
     // Get the currently selected option
     Option getSelectedOption() const;
 
 private:
-    sf::Font font;                  // Font for the menu text
-    std::vector<sf::Text> options;  // Text objects for each menu option
-    int selectedIndex;              // Currently selected option index
+    sf::Font font;                   // Font for the menu text
+    std::vector<sf::Text> options;   // Text objects for each menu option
+    int selectedIndex = 0;           // Currently selected option index
 };
 
 #endif // SIMULATE_MENU_H

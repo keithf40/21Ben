@@ -1,14 +1,18 @@
 #include "SimulateMenu.h"
+#include <iostream>
 
 // Constructor - sets up the "Back" button
 SimulateMenu::SimulateMenu(float width, float height) {
     // Load the font from file
-    if (!font.openFromFile("assets/ttfFont.ttf")) {
-        std::cout << "Font not found!" << std::endl;
+    if (!font.loadFromFile("assets/ttfFont.ttf")) {
+        std::cerr << "Font not found!" << std::endl;
     }
 
     // Create "Back" button
-    sf::Text backButton(font, "Back", 50);
+    sf::Text backButton;
+    backButton.setFont(font);
+    backButton.setString("Back");
+    backButton.setCharacterSize(50);
     backButton.setFillColor(sf::Color::White);
     backButton.setPosition(sf::Vector2f(10.f, height - 70.f));
 
@@ -21,18 +25,22 @@ SimulateMenu::SimulateMenu(float width, float height) {
 
 // Draw the simulate menu (currently only the Back button)
 void SimulateMenu::draw(sf::RenderWindow& window) {
-    window.draw(options[0]);
+    for (const auto& option : options) {
+        window.draw(option);
+    }
 }
 
 // Handle mouse hover over the Back button
-void SimulateMenu::handleEvent(sf::Event event, sf::RenderWindow& window) {
-    if (event.is<sf::Event::MouseMoved>()) {
+void SimulateMenu::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
+    if (event.type == sf::Event::MouseMoved) {
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-        for (int i = 0; i < options.size(); i++) {
+        for (std::size_t i = 0; i < options.size(); ++i) {
             if (options[i].getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
-                options[selectedIndex].setFillColor(sf::Color::White); // reset previous
-                selectedIndex = i;
-                options[selectedIndex].setFillColor(sf::Color::Yellow); // highlight new
+                if (i != selectedIndex) {
+                    options[selectedIndex].setFillColor(sf::Color::White); // reset previous
+                    selectedIndex = i;
+                    options[selectedIndex].setFillColor(sf::Color::Yellow); // highlight new
+                }
             }
             else if (i != selectedIndex) {
                 options[i].setFillColor(sf::Color::White); // reset unselected
@@ -43,8 +51,8 @@ void SimulateMenu::handleEvent(sf::Event event, sf::RenderWindow& window) {
 
 // Return the selected option (only "Back" in this case)
 SimulateMenu::Option SimulateMenu::getSelectedOption() const {
-    switch (selectedIndex) {
-    case 0: return Option::BACK;
-    default: return Option::NONE;
+    if (selectedIndex == 0) {
+        return Option::BACK;
     }
+    return Option::NONE;
 }

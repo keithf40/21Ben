@@ -13,13 +13,9 @@ int main() {
     sf::RenderWindow window(sf::VideoMode({ 1200, 800 }), "Game");
 
     // Backgrounds for different screens
-    sf::RectangleShape menuBackground;
-    sf::RectangleShape settingsBackground;
-    sf::RectangleShape gameBackground;
-
-    menuBackground.setSize(sf::Vector2f(1200.f, 800.f));
-    settingsBackground.setSize(sf::Vector2f(1200.f, 800.f));
-    gameBackground.setSize(sf::Vector2f(1200.f, 800.f));
+    sf::RectangleShape menuBackground(sf::Vector2f(1200.f, 800.f));
+    sf::RectangleShape settingsBackground(sf::Vector2f(1200.f, 800.f));
+    sf::RectangleShape gameBackground(sf::Vector2f(1200.f, 800.f));
 
     // Load textures for backgrounds
     Texture textures;
@@ -42,71 +38,63 @@ int main() {
 
     // Main game loop
     while (window.isOpen()) {
-        // Handle events
-        while (auto event = window.pollEvent()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
             // Close the window
-            if (event->is<sf::Event::Closed>()) {
+            if (event.type == sf::Event::Closed) {
                 window.close();
             }
 
             // Handle input based on current state
             switch (currState) {
             case GameState::MAIN_MENU:
-                mainMenu.handleEvent(*event, window);
-                if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonReleased>()) {
-                    if (mouseButton->button == sf::Mouse::Button::Left) {
-                        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-                        MainMenu::Option selected = mainMenu.getSelectedOption();
-                        if (mainMenu.getSelectedOptionPos().contains(static_cast<sf::Vector2f>(mousePos))) {
-                            if (selected == MainMenu::Option::PLAY) {
-                                currState = GameState::PLAY;
-                            }
-                            else if (selected == MainMenu::Option::SIMULATE) {
-                                currState = GameState::SIMULATE;
-                            }
-                            else if (selected == MainMenu::Option::EXIT) {
-                                window.close();
-                            }
+                mainMenu.handleEvent(event, window);
+                if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                    MainMenu::Option selected = mainMenu.getSelectedOption();
+                    if (mainMenu.getSelectedOptionPos().contains(static_cast<sf::Vector2f>(mousePos))) {
+                        if (selected == MainMenu::Option::PLAY) {
+                            currState = GameState::PLAY;
+                        }
+                        else if (selected == MainMenu::Option::SIMULATE) {
+                            currState = GameState::SIMULATE;
+                        }
+                        else if (selected == MainMenu::Option::EXIT) {
+                            window.close();
                         }
                     }
                 }
                 break;
 
             case GameState::SIMULATE:
-                simulateMenu.handleEvent(*event, window);
-                if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonReleased>()) {
-                    if (mouseButton->button == sf::Mouse::Button::Left) {
-                        SimulateMenu::Option selected = simulateMenu.getSelectedOption();
-                        if (selected == SimulateMenu::Option::BACK) {
-                            currState = GameState::MAIN_MENU;
-                        }
+                simulateMenu.handleEvent(event, window);
+                if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+                    SimulateMenu::Option selected = simulateMenu.getSelectedOption();
+                    if (selected == SimulateMenu::Option::BACK) {
+                        currState = GameState::MAIN_MENU;
                     }
                 }
                 break;
 
             case GameState::PLAY:
-                playMenu.handleEvent(*event, window);
-                if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonReleased>()) {
-                    if (mouseButton->button == sf::Mouse::Button::Left) {
-                        PlayMenu::Option selected = playMenu.getSelectedOption();
-                        if (selected == PlayMenu::Option::BACK) {
-                            currState = GameState::MAIN_MENU;
-                        }
-                        else if (selected == PlayMenu::Option::START) {
-                            currState = GameState::GAME;
-                        }
+                playMenu.handleEvent(event, window);
+                if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+                    PlayMenu::Option selected = playMenu.getSelectedOption();
+                    if (selected == PlayMenu::Option::BACK) {
+                        currState = GameState::MAIN_MENU;
+                    }
+                    else if (selected == PlayMenu::Option::START) {
+                        currState = GameState::GAME;
                     }
                 }
                 break;
 
             case GameState::GAME:
-                gameScreen.handleEvent(*event, window);
-                if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonReleased>()) {
-                    if (mouseButton->button == sf::Mouse::Button::Left) {
-                        Game::Option selected = gameScreen.getSelectedOption();
-                        if (selected == Game::Option::SKIP) {
-                            currState = GameState::MAIN_MENU;
-                        }
+                gameScreen.handleEvent(event, window);
+                if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+                    Game::Option selected = gameScreen.getSelectedOption();
+                    if (selected == Game::Option::SKIP) {
+                        currState = GameState::MAIN_MENU;
                     }
                 }
                 break;

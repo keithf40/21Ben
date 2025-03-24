@@ -19,7 +19,7 @@ public:
     void draw(sf::RenderWindow& window);
 
     // Handles mouse events for selection
-    void handleEvent(sf::Event event, sf::RenderWindow& window);
+    void handleEvent(const sf::Event& event, sf::RenderWindow& window);
 
     // Returns the currently selected menu option
     Option getSelectedOption() const;
@@ -28,9 +28,9 @@ public:
     sf::FloatRect getSelectedOptionPos() const;
 
 private:
-    std::vector<sf::Text> options;  // Stores text elements for menu options
-    sf::Font font;                  // Font used for all menu text
-    int selectedIndex;              // Currently selected/hovered option index
+    std::vector<sf::Text> options;   // Stores text elements for menu options
+    sf::Font font;                   // Font used for all menu text
+    int selectedIndex = 0;           // Currently selected/hovered option index
 };
 
 #endif // MAIN_MENU_H
