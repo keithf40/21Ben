@@ -9,7 +9,8 @@
 #include "Deck.h"
 #include "Dealer.h"
 #include "Player.h"
-#include "Texture.h" // For card images
+#include "Texture.h"
+#include "OptimalPlay.h"  // For bot strategy
 
 class Game {
 public:
@@ -19,7 +20,7 @@ public:
 
     // Draw the game screen including card images, messages, and action buttons.
     void draw(sf::RenderWindow& window);
-    // Handle events including mouse clicks for game actions.
+    // Handle events (both mouse and keyboard) for human actions.
     void handleEvent(const sf::Event& event, sf::RenderWindow& window);
 
     Option getSelectedOption() const;
@@ -31,16 +32,19 @@ private:
     sf::Font font;
 
     // UI Buttons:
-    sf::Text dealButton;      // Shown when round is not active.
-    sf::Text hitButton;       // Shown during an active round.
-    sf::Text standButton;     // Shown during an active round.
-    sf::Text doubleButton;    // Shown during an active round.
-    sf::Text splitButton;     // Shown during an active round.
+    sf::Text dealButton;      // Shown when round is not active (for human).
+    sf::Text hitButton;       // For human.
+    sf::Text standButton;     // For human.
+    sf::Text doubleButton;    // For human.
+    sf::Text splitButton;     // For human.
 
     // Core game components.
     Deck deck;
     Dealer dealer;
-    Player player;
+    std::vector<Player> players;  // 7 players (index 3 is human)
+
+    // The index of the human player.
+    const int humanIndex = 3;
 
     bool roundInProgress;
     std::string message;
@@ -48,8 +52,10 @@ private:
     // Message text (e.g., outcome messages)
     sf::Text messageText;
 
-    // Vectors of sprites for displaying cards.
-    std::vector<sf::Sprite> playerCardSprites;
+    // Vectors of sprites for displaying cards for each player.
+    // We'll maintain a vector of vector of sprites – one vector per player.
+    std::vector<std::vector<sf::Sprite>> playersCardSprites;
+    // And one for the dealer.
     std::vector<sf::Sprite> dealerCardSprites;
 
     // Card dimensions (original size before scaling)
@@ -62,14 +68,25 @@ private:
     float screenWidth;
     float screenHeight;
 
+    // Predefined positions for players’ hands.
+    // We assume players 0,1,2 on the left, 3 (human) in center-bottom,
+    // and 4,5,6 on the right.
+    std::vector<sf::Vector2f> playerPositions;
+
     // Texture holder for card images.
     Texture textures;
+
+    // Optimal play strategy (used for bot players).
+    OptimalPlay optimalPlay;
 
     // Update display: update card sprites and message text.
     void updateDisplay();
 
-    // Process dealer turn and resolve round outcome for all player hands.
+    // Process dealer turn and resolve round outcomes for all players.
     void finishRound();
+
+    // Automatically simulate bot moves.
+    void simulateBotMoves();
 
     // Check if a given text object was clicked.
     bool isTextClicked(const sf::Text& text, sf::RenderWindow& window);

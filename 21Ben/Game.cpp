@@ -1,24 +1,24 @@
 #include "Game.h"
 #include <sstream>
 
+// Constructor – initializes screen dimensions, players, and positions.
 Game::Game(float width, float height)
-    : player("Player", 200), roundInProgress(false), screenWidth(width), screenHeight(height)
+    : roundInProgress(false), screenWidth(width), screenHeight(height)
 {
     if (!font.loadFromFile("assets/ttfFont.ttf")) {
         std::cerr << "Font not found!" << std::endl;
     }
 
-    // Load all textures (cards and backgrounds)
+    // Load textures.
     textures.loadTextures();
 
-    // Setup the Deal button (shown when round is not active).
+    // Setup UI buttons.
     dealButton.setFont(font);
     dealButton.setString("Deal");
     dealButton.setCharacterSize(50);
     dealButton.setFillColor(sf::Color::White);
     dealButton.setPosition(sf::Vector2f(screenWidth - 120.f, 10.f));
 
-    // Setup action buttons (shown during an active round).
     hitButton.setFont(font);
     hitButton.setString("Hit");
     hitButton.setCharacterSize(40);
@@ -49,8 +49,36 @@ Game::Game(float width, float height)
     messageText.setFillColor(sf::Color::Yellow);
     messageText.setPosition(screenWidth / 2.f - 200.f, screenHeight / 2.f - 50.f);
 
-    // For simplicity, place an initial bet.
-    player.placeBet(10);
+    // Initialize 7 players.
+    // We want human at index 3.
+    players.push_back(Player("Bot 1", 200));
+    players.push_back(Player("Bot 2", 200));
+    players.push_back(Player("Bot 3", 200));
+    players.push_back(Player("Human", 200));
+    players.push_back(Player("Bot 4", 200));
+    players.push_back(Player("Bot 5", 200));
+    players.push_back(Player("Bot 6", 200));
+
+    // Set up positions for each player's hand.
+    // Left side: indices 0,1,2.
+    // Center (human): index 3.
+    // Right side: indices 4,5,6.
+    playerPositions.resize(7);
+    playerPositions[0] = sf::Vector2f(50.f, 100.f);
+    playerPositions[1] = sf::Vector2f(50.f, 250.f);
+    playerPositions[2] = sf::Vector2f(50.f, 400.f);
+    playerPositions[3] = sf::Vector2f(screenWidth / 2.f - 100.f, 500.f);  // Human in center.
+    playerPositions[4] = sf::Vector2f(screenWidth - 200.f, 400.f);
+    playerPositions[5] = sf::Vector2f(screenWidth - 200.f, 250.f);
+    playerPositions[6] = sf::Vector2f(screenWidth - 200.f, 100.f);
+
+    // Reserve space for players’ card sprites.
+    playersCardSprites.resize(players.size());
+
+    // For simplicity, set an initial bet for each player.
+    for (auto& player : players) {
+        player.placeBet(10);
+    }
 
     // Start the first round.
     startNewRound();
@@ -59,44 +87,106 @@ Game::Game(float width, float height)
 void Game::startNewRound() {
     deck.reset();
     dealer.clear();
-    player.reset();
-    player.placeBet(10);
+
+    // Reset each player's state.
+    for (auto& player : players) {
+        player.reset();
+        player.placeBet(10);
+    }
     roundInProgress = true;
     message = "";
 
-    // Deal initial cards: two to the player, two to the dealer.
-    player.hit(deck);
-    player.hit(deck);
-    dealer.hit(deck); // visible dealer card.
-    dealer.hit(deck); // hidden card.
+    // Deal two cards to each player.
+    for (auto& player : players) {
+        player.hit(deck);
+        player.hit(deck);
+    }
+    // Deal two cards to dealer.
+    dealer.hit(deck);
+    dealer.hit(deck);
+
     updateDisplay();
 
-    // If the player's current hand is a natural blackjack, immediately process dealer play.
-    if (player.getCurrentHand().isBlackjack()) {
+    // Check for natural blackjack in the human player's hand.
+    if (players[humanIndex].getCurrentHand().isBlackjack()) {
         finishRound();
+        return;
     }
+
+    // Simulate moves for bot players automatically.
+    simulateBotMoves();
+}
+
+void Game::simulateBotMoves() {
+    // For each bot (all players except human), simulate optimal play.
+    // Use the dealer's upcard (first card) for decision-making.
+    Card dealerUp = dealer.getHand().getCards()[0];
+    for (int i = 0; i < players.size(); i++) {
+        if (i == humanIndex)
+            continue;
+        // For each bot, while the bot's current hand is not busted and not standing,
+        // use OptimalPlay to decide.
+        // We'll assume that bot actions are simulated instantly.
+        bool botTurn = true;
+        while (botTurn && !players[i].isBusted()) {
+            char move = optimalPlay.getMove(players[i].getCurrentHand(), dealerUp);
+            // Moves: 'H' = hit, 'S' = stand, 'D' = double down, 'P' = split.
+            if (move == 'H') {
+                players[i].hit(deck);
+                if (players[i].isBusted())
+                    botTurn = false;
+            }
+            else if (move == 'S') {
+                botTurn = false;
+            }
+            else if (move == 'D') {
+                if (players[i].getCurrentBet() <= players[i].getBalance()) {
+                    players[i].placeBet(players[i].getCurrentBet());
+                    players[i].hit(deck);
+                }
+                botTurn = false;
+            }
+            else if (move == 'P') {
+                if (players[i].split()) {
+                    if (players[i].getCurrentHand().getCards().size() < 2)
+                        players[i].hit(deck);
+                }
+                else {
+                    // If cannot split, default to hit.
+                    players[i].hit(deck);
+                }
+            }
+            else {
+                // Default to stand.
+                botTurn = false;
+            }
+        }
+    }
+    updateDisplay();
 }
 
 void Game::updateDisplay() {
     // Clear previous sprites.
-    playerCardSprites.clear();
+    for (auto& vec : playersCardSprites)
+        vec.clear();
     dealerCardSprites.clear();
 
-    // Update player's card sprites for each hand (displayed in separate rows).
-    const auto& playerHands = player.getHands();
-    float verticalMargin = 20.f;
-    for (size_t h = 0; h < playerHands.size(); h++) {
-        const auto& cards = playerHands[h].getCards();
-        size_t pCount = cards.size();
+    // Update each player's card sprites.
+    for (size_t i = 0; i < players.size(); i++) {
+        const auto& hand = players[i].getCurrentHand().getCards();
+        size_t pCount = hand.size();
+        // We'll draw each player's hand starting at their designated position.
+        sf::Vector2f pos = playerPositions[i];
+        // Calculate total width.
         float totalWidth = pCount * (cardWidth * scaleFactor) + (pCount - 1) * cardMargin;
-        float startX = (screenWidth - totalWidth) / 2.f;
-        float y = 500.f + h * ((cardHeight * scaleFactor) + verticalMargin);
-        for (size_t i = 0; i < pCount; i++) {
+        float startX = pos.x; // For simplicity, use pos.x directly.
+        // (You could center relative to a region if desired.)
+        for (size_t j = 0; j < pCount; j++) {
             sf::Sprite sprite;
-            sprite.setTexture(getCardTexture(cards[i]));
-            sprite.setPosition(startX + i * ((cardWidth * scaleFactor) + cardMargin), y);
+            sprite.setTexture(getCardTexture(hand[j]));
+            sprite.setPosition(startX + j * ((cardWidth * scaleFactor) + cardMargin), pos.y);
             sprite.setScale(scaleFactor, scaleFactor);
-            playerCardSprites.push_back(sprite);
+            playersCardSprites[i].push_back(sprite);
         }
     }
 
@@ -104,15 +194,14 @@ void Game::updateDisplay() {
     const auto& dCards = dealer.getHand().getCards();
     size_t dCount = dCards.size();
     if (roundInProgress && dCount >= 2) {
+        // Show only the first dealer card and hide the second.
         float totalDealerWidth = 2 * (cardWidth * scaleFactor) + cardMargin;
         float startXDealer = (screenWidth - totalDealerWidth) / 2.f;
-        // Show first dealer card:
         sf::Sprite sprite;
         sprite.setTexture(getCardTexture(dCards[0]));
         sprite.setPosition(startXDealer, 50.f);
         sprite.setScale(scaleFactor, scaleFactor);
         dealerCardSprites.push_back(sprite);
-        // Second card hidden:
         sf::Sprite hiddenSprite;
         hiddenSprite.setTexture(textures.backOfCard);
         hiddenSprite.setPosition(startXDealer + (cardWidth * scaleFactor) + cardMargin, 50.f);
@@ -138,29 +227,27 @@ void Game::updateDisplay() {
 void Game::finishRound() {
     int dealerTotal = dealer.dealerTurn(deck);
     std::string outcomes;
-    const auto& hands = player.getHands();
-    for (size_t i = 0; i < hands.size(); i++) {
-        int handTotal = hands[i].getTotalValue();
-        outcomes += "Hand " + std::to_string(i + 1) + ": ";
-        if (hands[i].isBlackjack()) {
+    for (size_t i = 0; i < players.size(); i++) {
+        int handTotal = players[i].getCurrentHand().getTotalValue();
+        outcomes += players[i].getName() + ": ";
+        if (players[i].getCurrentHand().isBlackjack()) {
             outcomes += "Blackjack!";
-            // Natural blackjack pays 3:2.
-            player.addWinnings(static_cast<int>(player.getCurrentBet() * 2.5));
+            players[i].addWinnings(static_cast<int>(players[i].getCurrentBet() * 2.5));
         }
         else if (handTotal > 21) {
             outcomes += "Busted";
         }
         else if (dealerTotal > 21) {
             outcomes += "Win";
-            player.addWinnings(player.getCurrentBet() * 2);
+            players[i].addWinnings(players[i].getCurrentBet() * 2);
         }
         else if (handTotal > dealerTotal) {
             outcomes += "Win";
-            player.addWinnings(player.getCurrentBet() * 2);
+            players[i].addWinnings(players[i].getCurrentBet() * 2);
         }
         else if (handTotal == dealerTotal) {
             outcomes += "Push";
-            player.addWinnings(player.getCurrentBet());
+            players[i].addWinnings(players[i].getCurrentBet());
         }
         else {
             outcomes += "Lose";
@@ -258,40 +345,32 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
             }
         }
         else {
-            // Mouse clicks on action buttons.
+            // Only the human player's actions are processed by input.
             if (isTextClicked(hitButton, window)) {
-                player.hit(deck);
-                if (player.isBusted()) {
-                    message = "Hand " + std::to_string(player.getHands().size()) + " busted! ";
-                    if (!player.advanceHand())
-                        finishRound();
-                }
-                updateDisplay();
-            }
-            else if (isTextClicked(standButton, window)) {
-                if (player.advanceHand()) {
-                    if (player.getCurrentHand().getCards().size() < 2) {
-                        player.hit(deck);
-                    }
-                }
-                else {
+                players[humanIndex].hit(deck);
+                if (players[humanIndex].isBusted()) {
+                    message = "You busted!";
                     finishRound();
                 }
                 updateDisplay();
             }
+            else if (isTextClicked(standButton, window)) {
+                // Human stands.
+                finishRound();
+                updateDisplay();
+            }
             else if (isTextClicked(doubleButton, window)) {
-                if (player.getCurrentBet() <= player.getBalance()) {
-                    player.placeBet(player.getCurrentBet()); // Deduct additional bet.
-                    player.hit(deck);
-                    if (!player.advanceHand())
-                        finishRound();
+                if (players[humanIndex].getCurrentBet() <= players[humanIndex].getBalance()) {
+                    players[humanIndex].placeBet(players[humanIndex].getCurrentBet());
+                    players[humanIndex].hit(deck);
+                    finishRound();
                 }
                 updateDisplay();
             }
             else if (isTextClicked(splitButton, window)) {
-                if (player.split()) {
-                    if (player.getCurrentHand().getCards().size() < 2) {
-                        player.hit(deck);
+                if (players[humanIndex].split()) {
+                    if (players[humanIndex].getCurrentHand().getCards().size() < 2) {
+                        players[humanIndex].hit(deck);
                     }
                     updateDisplay();
                 }
@@ -303,9 +382,8 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
         }
     }
     else if (event.type == sf::Event::KeyReleased) {
-        // Keyboard controls:
-        // 'd' to deal if no round is active, 'h' for hit, 's' for stand,
-        // 'p' for split, and 'x' for double down.
+        // Keyboard controls for human player.
+        // d: deal (if no round active), h: hit, s: stand, p: split, x: double down.
         switch (event.key.code) {
         case sf::Keyboard::D:
             if (!roundInProgress)
@@ -313,33 +391,25 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
             break;
         case sf::Keyboard::H:
             if (roundInProgress) {
-                player.hit(deck);
-                if (player.isBusted()) {
-                    message = "Hand " + std::to_string(player.getHands().size()) + " busted! ";
-                    if (!player.advanceHand())
-                        finishRound();
+                players[humanIndex].hit(deck);
+                if (players[humanIndex].isBusted()) {
+                    message = "You busted!";
+                    finishRound();
                 }
                 updateDisplay();
             }
             break;
         case sf::Keyboard::S:
             if (roundInProgress) {
-                if (player.advanceHand()) {
-                    if (player.getCurrentHand().getCards().size() < 2) {
-                        player.hit(deck);
-                    }
-                }
-                else {
-                    finishRound();
-                }
+                finishRound();
                 updateDisplay();
             }
             break;
         case sf::Keyboard::P:
             if (roundInProgress) {
-                if (player.split()) {
-                    if (player.getCurrentHand().getCards().size() < 2) {
-                        player.hit(deck);
+                if (players[humanIndex].split()) {
+                    if (players[humanIndex].getCurrentHand().getCards().size() < 2) {
+                        players[humanIndex].hit(deck);
                     }
                     updateDisplay();
                 }
@@ -351,11 +421,10 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
             break;
         case sf::Keyboard::X:
             if (roundInProgress) {
-                if (player.getCurrentBet() <= player.getBalance()) {
-                    player.placeBet(player.getCurrentBet()); // Deduct additional bet.
-                    player.hit(deck);
-                    if (!player.advanceHand())
-                        finishRound();
+                if (players[humanIndex].getCurrentBet() <= players[humanIndex].getBalance()) {
+                    players[humanIndex].placeBet(players[humanIndex].getCurrentBet());
+                    players[humanIndex].hit(deck);
+                    finishRound();
                 }
                 updateDisplay();
             }
@@ -376,10 +445,12 @@ void Game::draw(sf::RenderWindow& window) {
         window.draw(doubleButton);
         window.draw(splitButton);
     }
-    for (const auto& sprite : dealerCardSprites) {
-        window.draw(sprite);
+    for (const auto& vec : playersCardSprites) {
+        for (const auto& sprite : vec) {
+            window.draw(sprite);
+        }
     }
-    for (const auto& sprite : playerCardSprites) {
+    for (const auto& sprite : dealerCardSprites) {
         window.draw(sprite);
     }
     window.draw(messageText);
