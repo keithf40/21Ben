@@ -133,7 +133,95 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Card.cpp" />
+    <ClCompile Include="Counter.cpp" />
+    <ClCompile Include="Dealer.cpp" />
+    <ClCompile Include="Deck.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Hand.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
+    <ClCompile Include="OptimalPlay.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="PlayMenu.cpp" />
+    <ClCompile Include="SimulateMenu.cpp" />
+    <ClCompile Include="Texture.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Card.h" />
+    <ClInclude Include="Counter.h" />
+    <ClInclude Include="Dealer.h" />
+    <ClInclude Include="Deck.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="Hand.h" />
+    <ClInclude Include="MainMenu.h" />
+    <ClInclude Include="OptimalPlay.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="PlayMenu.h" />
+    <ClInclude Include="SimulateMenu.h" />
+    <ClInclude Include="Texture.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="assets\10_of_clubs.png" />
+    <Image Include="assets\10_of_diamonds.png" />
+    <Image Include="assets\10_of_hearts.png" />
+    <Image Include="assets\10_of_spades.png" />
+    <Image Include="assets\2_of_clubs.png" />
+    <Image Include="assets\2_of_diamonds.png" />
+    <Image Include="assets\2_of_hearts.png" />
+    <Image Include="assets\2_of_spades.png" />
+    <Image Include="assets\3_of_clubs.png" />
+    <Image Include="assets\3_of_diamonds.png" />
+    <Image Include="assets\3_of_hearts.png" />
+    <Image Include="assets\3_of_spades.png" />
+    <Image Include="assets\4_of_clubs.png" />
+    <Image Include="assets\4_of_diamonds.png" />
+    <Image Include="assets\4_of_hearts.png" />
+    <Image Include="assets\4_of_spades.png" />
+    <Image Include="assets\5_of_clubs.png" />
+    <Image Include="assets\5_of_diamonds.png" />
+    <Image Include="assets\5_of_hearts.png" />
+    <Image Include="assets\5_of_spades.png" />
+    <Image Include="assets\6_of_clubs.png" />
+    <Image Include="assets\6_of_diamonds.png" />
+    <Image Include="assets\6_of_hearts.png" />
+    <Image Include="assets\6_of_spades.png" />
+    <Image Include="assets\7_of_clubs.png" />
+    <Image Include="assets\7_of_diamonds.png" />
+    <Image Include="assets\7_of_hearts.png" />
+    <Image Include="assets\7_of_spades.png" />
+    <Image Include="assets\8_of_clubs.png" />
+    <Image Include="assets\8_of_diamonds.png" />
+    <Image Include="assets\8_of_hearts.png" />
+    <Image Include="assets\8_of_spades.png" />
+    <Image Include="assets\9_of_clubs.png" />
+    <Image Include="assets\9_of_diamonds.png" />
+    <Image Include="assets\9_of_hearts.png" />
+    <Image Include="assets\9_of_spades.png" />
+    <Image Include="assets\ace_of_clubs.png" />
+    <Image Include="assets\ace_of_diamonds.png" />
+    <Image Include="assets\ace_of_hearts.png" />
+    <Image Include="assets\ace_of_spades.png" />
+    <Image Include="assets\back_of_card.png" />
+    <Image Include="assets\gameBackground.png" />
+    <Image Include="assets\jack_of_clubs.png" />
+    <Image Include="assets\jack_of_diamonds.png" />
+    <Image Include="assets\jack_of_hearts.png" />
+    <Image Include="assets\jack_of_spades.png" />
+    <Image Include="assets\king_of_clubs.png" />
+    <Image Include="assets\king_of_diamonds.png" />
+    <Image Include="assets\king_of_hearts.png" />
+    <Image Include="assets\king_of_spades.png" />
+    <Image Include="assets\mainMenuBackground.jpg" />
+    <Image Include="assets\queen_of_clubs.png" />
+    <Image Include="assets\queen_of_diamonds.png" />
+    <Image Include="assets\queen_of_hearts.png" />
+    <Image Include="assets\queen_of_spades.png" />
+    <Image Include="assets\settingsBackground.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="assets\arial.ttf" />
+    <Font Include="assets\ttfFont.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
