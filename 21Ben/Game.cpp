@@ -250,6 +250,7 @@ sf::Texture& Game::getCardTexture(const Card& card) {
 }
 
 void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
+    // Handle both mouse and keyboard events.
     if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
         if (!roundInProgress) {
             if (isTextClicked(dealButton, window)) {
@@ -257,7 +258,7 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
             }
         }
         else {
-            // Check action buttons.
+            // Mouse clicks on action buttons.
             if (isTextClicked(hitButton, window)) {
                 player.hit(deck);
                 if (player.isBusted()) {
@@ -268,8 +269,14 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
                 updateDisplay();
             }
             else if (isTextClicked(standButton, window)) {
-                if (!player.advanceHand())
+                if (player.advanceHand()) {
+                    if (player.getCurrentHand().getCards().size() < 2) {
+                        player.hit(deck);
+                    }
+                }
+                else {
                     finishRound();
+                }
                 updateDisplay();
             }
             else if (isTextClicked(doubleButton, window)) {
@@ -283,8 +290,9 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
             }
             else if (isTextClicked(splitButton, window)) {
                 if (player.split()) {
-                    // After splitting, hit the current (now split) hand.
-                    player.hit(deck);
+                    if (player.getCurrentHand().getCards().size() < 2) {
+                        player.hit(deck);
+                    }
                     updateDisplay();
                 }
                 else {
@@ -292,6 +300,68 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
                     updateDisplay();
                 }
             }
+        }
+    }
+    else if (event.type == sf::Event::KeyReleased) {
+        // Keyboard controls:
+        // 'd' to deal if no round is active, 'h' for hit, 's' for stand,
+        // 'p' for split, and 'x' for double down.
+        switch (event.key.code) {
+        case sf::Keyboard::D:
+            if (!roundInProgress)
+                startNewRound();
+            break;
+        case sf::Keyboard::H:
+            if (roundInProgress) {
+                player.hit(deck);
+                if (player.isBusted()) {
+                    message = "Hand " + std::to_string(player.getHands().size()) + " busted! ";
+                    if (!player.advanceHand())
+                        finishRound();
+                }
+                updateDisplay();
+            }
+            break;
+        case sf::Keyboard::S:
+            if (roundInProgress) {
+                if (player.advanceHand()) {
+                    if (player.getCurrentHand().getCards().size() < 2) {
+                        player.hit(deck);
+                    }
+                }
+                else {
+                    finishRound();
+                }
+                updateDisplay();
+            }
+            break;
+        case sf::Keyboard::P:
+            if (roundInProgress) {
+                if (player.split()) {
+                    if (player.getCurrentHand().getCards().size() < 2) {
+                        player.hit(deck);
+                    }
+                    updateDisplay();
+                }
+                else {
+                    message = "Cannot split this hand.";
+                    updateDisplay();
+                }
+            }
+            break;
+        case sf::Keyboard::X:
+            if (roundInProgress) {
+                if (player.getCurrentBet() <= player.getBalance()) {
+                    player.placeBet(player.getCurrentBet()); // Deduct additional bet.
+                    player.hit(deck);
+                    if (!player.advanceHand())
+                        finishRound();
+                }
+                updateDisplay();
+            }
+            break;
+        default:
+            break;
         }
     }
 }
