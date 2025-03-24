@@ -92,10 +92,7 @@ int main() {
             case GameState::GAME:
                 gameScreen.handleEvent(event, window);
                 if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
-                    Game::Option selected = gameScreen.getSelectedOption();
-                    if (selected == Game::Option::SKIP) {
-                        currState = GameState::MAIN_MENU;
-                    }
+                    // In this example, gameScreen's Skip button will handle restarting the round.
                 }
                 break;
             }

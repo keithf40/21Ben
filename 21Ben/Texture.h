@@ -73,6 +73,4 @@ public:
     sf::Texture gameBackgroundImage;
 
     void loadTextures();
-
 };
-

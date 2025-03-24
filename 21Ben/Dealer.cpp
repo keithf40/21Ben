@@ -23,3 +23,7 @@ int Dealer::dealerTurn(Deck& deck) {
 bool Dealer::checkBlackjack() const {
     return hand.isBlackjack();
 }
+
+const Hand& Dealer::getHand() const {
+    return hand;
+}

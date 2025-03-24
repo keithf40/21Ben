@@ -70,3 +70,7 @@ int Player::getCurrentBet() const {
 std::string Player::toString() const {
     return name + "'s Hand: " + playerHand.toString() + " | Balance: $" + std::to_string(balance);
 }
+
+const Hand& Player::getHand() const {
+    return playerHand;
+}

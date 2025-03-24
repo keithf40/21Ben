@@ -45,4 +45,7 @@ public:
 
     // Returns a string describing the player's hand
     std::string toString() const;
+
+    // Added getter for player's hand for display purposes
+    const Hand& getHand() const;
 };

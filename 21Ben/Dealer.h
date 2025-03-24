@@ -21,4 +21,7 @@ public:
 
     // Checks if the dealer has a natural blackjack (Ace + 10/J/Q/K)
     bool checkBlackjack() const;
+
+    // Added getter for hand for display purposes
+    const Hand& getHand() const;
 };
