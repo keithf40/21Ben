@@ -20,29 +20,31 @@ Game::Game(float width, float height)
     dealButton.setFillColor(sf::Color::White);
     dealButton.setPosition(sf::Vector2f(screenWidth - 120.f, 10.f));
 
+    // Move player action buttons so they appear below the human player's cards.
+    // These new positions center the buttons horizontally and lower them (y = 680).
     hitButton.setFont(font);
     hitButton.setString("Hit");
     hitButton.setCharacterSize(40);
     hitButton.setFillColor(sf::Color::White);
-    hitButton.setPosition(sf::Vector2f(50.f, screenHeight - 120.f));
+    hitButton.setPosition(sf::Vector2f(370.f, 740.f));
 
     standButton.setFont(font);
     standButton.setString("Stand");
     standButton.setCharacterSize(40);
     standButton.setFillColor(sf::Color::White);
-    standButton.setPosition(sf::Vector2f(200.f, screenHeight - 120.f));
+    standButton.setPosition(sf::Vector2f(490.f, 740.f));
 
     doubleButton.setFont(font);
     doubleButton.setString("Double");
     doubleButton.setCharacterSize(40);
     doubleButton.setFillColor(sf::Color::White);
-    doubleButton.setPosition(sf::Vector2f(350.f, screenHeight - 120.f));
+    doubleButton.setPosition(sf::Vector2f(610.f, 740.f));
 
     splitButton.setFont(font);
     splitButton.setString("Split");
     splitButton.setCharacterSize(40);
     splitButton.setFillColor(sf::Color::White);
-    splitButton.setPosition(sf::Vector2f(520.f, screenHeight - 120.f));
+    splitButton.setPosition(sf::Vector2f(730.f, 740.f));
 
     // Setup message text.
     messageText.setFont(font);
@@ -52,20 +54,20 @@ Game::Game(float width, float height)
 
     // Initialize 5 players: 4 bots and 1 human (for a total of 5 players).
     // We want the human to be in the center, so we place it at index 2.
-    players.push_back(Player("Bot 1", 200)); // index 0 - left bot
-    players.push_back(Player("Bot 2", 200)); // index 1 - left bot
+    players.push_back(Player("Bot 1", 200)); // index 0 - left bot (top)
+    players.push_back(Player("Bot 2", 200)); // index 1 - left bot (bottom)
     players.push_back(Player("Human", 200)); // index 2 - human (center)
-    players.push_back(Player("Bot 3", 200)); // index 3 - right bot
-    players.push_back(Player("Bot 4", 200)); // index 4 - right bot
+    players.push_back(Player("Bot 3", 200)); // index 3 - right bot (top)
+    players.push_back(Player("Bot 4", 200)); // index 4 - right bot (bottom)
 
     // Set up positions for each player's hand.
-    // For 5 players: left bots at indices 0 and 1, human at index 2, right bots at indices 3 and 4.
+    // Bots' positions remain fixed; human position (index 2) is used only for vertical placement.
     playerPositions.resize(5);
     playerPositions[0] = sf::Vector2f(50.f, 150.f);                     // Bot 1 (left top)
-    playerPositions[1] = sf::Vector2f(50.f, 350.f);                     // Bot 2 (left bottom)
-    playerPositions[2] = sf::Vector2f(screenWidth / 2.f - 100.f, 550.f);  // Human (center)
+    playerPositions[1] = sf::Vector2f(50.f, 450.f);                     // Bot 2 (left bottom)
+    playerPositions[2] = sf::Vector2f(screenWidth / 2.f - 100.f, 550.f);  // Human (center vertical position)
     playerPositions[3] = sf::Vector2f(screenWidth - 200.f, 150.f);        // Bot 3 (right top)
-    playerPositions[4] = sf::Vector2f(screenWidth - 200.f, 350.f);        // Bot 4 (right bottom)
+    playerPositions[4] = sf::Vector2f(screenWidth - 200.f, 450.f);        // Bot 4 (right bottom)
 
     // Reserve space for players’ card sprites.
     playersCardSprites.resize(players.size());
@@ -80,7 +82,7 @@ Game::Game(float width, float height)
 }
 
 void Game::startNewRound() {
-    // Will shuffle wheh half the cards are remaining so over multiple rounds the count can go up/down
+    // Will shuffle when half the cards are remaining so over multiple rounds the count can go up/down
     if (deck.shuffleReady()) {
         deck.shuffle();
         //Reset the card counter here 
@@ -126,7 +128,7 @@ void Game::simulateBotMoves() {
         // For each bot, while the bot's current hand is not busted and not standing,
         // use OptimalPlay to decide.
         // We'll assume that bot actions are simulated instantly.
-        
+
         do {
             bool botTurn = true;
             while (botTurn && !players[i].isBusted()) {
@@ -159,7 +161,7 @@ void Game::simulateBotMoves() {
                 }
             }
         } while (players[i].advanceHand());
-        }
+    }
     updateDisplay();
 }
 
@@ -173,16 +175,21 @@ void Game::updateDisplay() {
     for (size_t i = 0; i < players.size(); i++) {
         const auto& hand = players[i].getCurrentHand().getCards();
         size_t pCount = hand.size();
-        // We'll draw each player's hand starting at their designated position.
-        sf::Vector2f pos = playerPositions[i];
-        // Calculate total width.
-        float totalWidth = pCount * (cardWidth * scaleFactor) + (pCount - 1) * cardMargin;
-        float startX = pos.x; // For simplicity, use pos.x directly.
-        // (You could center relative to a region if desired.)
+        // Retrieve the vertical position from the designated player position.
+        float posY = playerPositions[i].y;
+        float startX = playerPositions[i].x;  // default starting x-position
+
+        // If this is the human player, center their hand horizontally.
+        if (i == humanIndex) {
+            float totalWidth = pCount * (cardWidth * scaleFactor) + (pCount - 1) * cardMargin;
+            startX = (screenWidth - totalWidth) / 2.f;
+        }
+
+        // Draw each card for the player's hand.
         for (size_t j = 0; j < pCount; j++) {
             sf::Sprite sprite;
             sprite.setTexture(getCardTexture(hand[j]));
-            sprite.setPosition(startX + j * ((cardWidth * scaleFactor) + cardMargin), pos.y);
+            sprite.setPosition(startX + j * ((cardWidth * scaleFactor) + cardMargin), posY);
             sprite.setScale(scaleFactor, scaleFactor);
             playersCardSprites[i].push_back(sprite);
         }
@@ -192,7 +199,7 @@ void Game::updateDisplay() {
     const auto& dCards = dealer.getHand().getCards();
     size_t dCount = dCards.size();
     if (roundInProgress && dCount >= 2) {
-        // Show only the first dealer card and hide the second.
+        // Center the dealer's hand.
         float totalDealerWidth = 2 * (cardWidth * scaleFactor) + cardMargin;
         float startXDealer = (screenWidth - totalDealerWidth) / 2.f;
         sf::Sprite sprite;
