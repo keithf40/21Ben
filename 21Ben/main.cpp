@@ -79,12 +79,16 @@ int main() {
             case GameState::PLAY:
                 playMenu.handleEvent(event, window);
                 if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                     PlayMenu::Option selected = playMenu.getSelectedOption();
-                    if (selected == PlayMenu::Option::BACK) {
-                        currState = GameState::MAIN_MENU;
-                    }
-                    else if (selected == PlayMenu::Option::START) {
-                        currState = GameState::GAME;
+                    // Only trigger if the mouse click is within the bounds of the selected option
+                    if (playMenu.getSelectedOptionPos().contains(static_cast<sf::Vector2f>(mousePos))) {
+                        if (selected == PlayMenu::Option::BACK) {
+                            currState = GameState::MAIN_MENU;
+                        }
+                        else if (selected == PlayMenu::Option::START) {
+                            currState = GameState::GAME;
+                        }
                     }
                 }
                 break;
