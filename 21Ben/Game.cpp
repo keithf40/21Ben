@@ -49,28 +49,22 @@ Game::Game(float width, float height)
     messageText.setFillColor(sf::Color::Yellow);
     messageText.setPosition(screenWidth / 2.f - 200.f, screenHeight / 2.f - 50.f);
 
-    // Initialize 7 players.
-    // We want human at index 3.
-    players.push_back(Player("Bot 1", 200));
-    players.push_back(Player("Bot 2", 200));
-    players.push_back(Player("Bot 3", 200));
-    players.push_back(Player("Human", 200));
-    players.push_back(Player("Bot 4", 200));
-    players.push_back(Player("Bot 5", 200));
-    players.push_back(Player("Bot 6", 200));
+    // Initialize 5 players: 4 bots and 1 human (for a total of 5 players).
+    // We want the human to be in the center, so we place it at index 2.
+    players.push_back(Player("Bot 1", 200)); // index 0 - left bot
+    players.push_back(Player("Bot 2", 200)); // index 1 - left bot
+    players.push_back(Player("Human", 200)); // index 2 - human (center)
+    players.push_back(Player("Bot 3", 200)); // index 3 - right bot
+    players.push_back(Player("Bot 4", 200)); // index 4 - right bot
 
     // Set up positions for each player's hand.
-    // Left side: indices 0,1,2.
-    // Center (human): index 3.
-    // Right side: indices 4,5,6.
-    playerPositions.resize(7);
-    playerPositions[0] = sf::Vector2f(50.f, 100.f);
-    playerPositions[1] = sf::Vector2f(50.f, 250.f);
-    playerPositions[2] = sf::Vector2f(50.f, 400.f);
-    playerPositions[3] = sf::Vector2f(screenWidth / 2.f - 100.f, 500.f);  // Human in center.
-    playerPositions[4] = sf::Vector2f(screenWidth - 200.f, 400.f);
-    playerPositions[5] = sf::Vector2f(screenWidth - 200.f, 250.f);
-    playerPositions[6] = sf::Vector2f(screenWidth - 200.f, 100.f);
+    // For 5 players: left bots at indices 0 and 1, human at index 2, right bots at indices 3 and 4.
+    playerPositions.resize(5);
+    playerPositions[0] = sf::Vector2f(50.f, 150.f);                     // Bot 1 (left top)
+    playerPositions[1] = sf::Vector2f(50.f, 350.f);                     // Bot 2 (left bottom)
+    playerPositions[2] = sf::Vector2f(screenWidth / 2.f - 100.f, 550.f);  // Human (center)
+    playerPositions[3] = sf::Vector2f(screenWidth - 200.f, 150.f);        // Bot 3 (right top)
+    playerPositions[4] = sf::Vector2f(screenWidth - 200.f, 350.f);        // Bot 4 (right bottom)
 
     // Reserve space for players’ card sprites.
     playersCardSprites.resize(players.size());
