@@ -39,6 +39,7 @@ public:
     // Accessors
     Rank getRank() const;
     Suit getSuit() const;
+    int getValue() const;
 
     // Returns a string representation (e.g., "Ace of Spades")
     std::string toString() const;

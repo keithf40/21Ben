@@ -13,7 +13,7 @@ int Counter::getCount() const {
     return count;
 }
 //when the deck is shuffled the count needs to be reset
-bool Counter::resetCount() {
+void Counter::resetCount() {
     count = 0;
 }
 

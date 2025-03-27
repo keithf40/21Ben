@@ -28,3 +28,10 @@ std::string Card::toString() const {
     // Adjust index by subtracting 2 since enum Rank starts at 2
     return rankStrings[static_cast<int>(rank) - 2] + " of " + suitStrings[static_cast<int>(suit)];
 }
+
+int Card::getValue() const {
+    int value = static_cast<int> (rank);
+    if (value > 10 && value < 14) return 10;
+    if (value == 14) return 11;
+    return value;
+}

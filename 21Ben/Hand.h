@@ -10,7 +10,7 @@ private:
     std::vector<Card> cards;  // Cards currently in the hand
     int totalCount = 0;       // Running total value of the hand
     int aceCount = 0;         // Number of Aces in the hand
-
+    bool busted = false;
 public:
     // Constructor
     Hand();
@@ -25,7 +25,7 @@ public:
     void addCard(const Card& card);
 
     // Returns true if the hand is over 21
-    bool isBust() const;
+    bool isBust();
 
     // Returns true if the hand is a natural blackjack (Ace + 10)
     bool isBlackjack() const;
@@ -44,4 +44,6 @@ public:
 
     // Removes the last card from the hand (used during split)
     void removeLastCard();
+
+    bool isBusted() const;
 };

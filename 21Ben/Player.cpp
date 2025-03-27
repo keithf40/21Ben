@@ -77,37 +77,20 @@ const std::vector<Hand>& Player::getHands() const {
 }
 
 bool Player::split() {
-    // Can only split if the current hand has exactly 2 cards.
-    if (hands[currentHandIndex].getCards().size() == 2) {
-        const Card& card1 = hands[currentHandIndex].getCards()[0];
-        const Card& card2 = hands[currentHandIndex].getCards()[1];
-
-        // Determine if both cards are "picture cards" (Ten, Jack, Queen, King).
-        bool isPicture1 = (card1.getRank() == Rank::Ten || card1.getRank() == Rank::Jack ||
-            card1.getRank() == Rank::Queen || card1.getRank() == Rank::King);
-        bool isPicture2 = (card2.getRank() == Rank::Ten || card2.getRank() == Rank::Jack ||
-            card2.getRank() == Rank::Queen || card2.getRank() == Rank::King);
-        // If both are picture cards but not identical, do not allow splitting.
-        if (isPicture1 && isPicture2 && card1.getRank() != card2.getRank()) {
+    if (hands[currentHandIndex].isPair()) {
+        if (currentBet > balance) {
+            std::cerr << "Not enough balance to split\n";
             return false;
         }
-        // Otherwise, if they form a pair, allow splitting.
-        if (hands[currentHandIndex].isPair()) {
-            if (currentBet > balance) {
-                std::cerr << "Not enough balance to split\n";
-                return false;
-            }
-            balance -= currentBet; // Deduct additional bet for new hand.
-            // Remove the second card from the current hand.
-            Card secondCard = hands[currentHandIndex].getCards().back();
-            hands[currentHandIndex].removeLastCard();
-            // Create a new hand with the removed card.
-            Hand newHand;
-            newHand.addCard(secondCard);
-            // Add the new hand.
-            hands.push_back(newHand);
-            return true;
-        }
+        balance -= currentBet; // Deduct additional bet for new hand.
+        // Create a new hand with the removed card.
+        Hand newHand;
+        newHand.addCard(hands[currentHandIndex].getCards().back());
+        // Add the new hand.
+        hands.push_back(newHand);
+        // Remove the second card from the current hand.
+        hands[currentHandIndex].removeLastCard();
+        return true;
     }
     return false;
 }
@@ -121,5 +104,9 @@ bool Player::advanceHand() {
 }
 
 bool Player::allHandsPlayed() const {
-    return currentHandIndex >= static_cast<int>(hands.size()) - 1;
+    return currentHandIndex >= hands.size() - 1;
+}
+
+int Player::getTotalHands() const {
+    return hands.size();
 }

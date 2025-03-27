@@ -1,5 +1,6 @@
 #include "Game.h"
 #include <sstream>
+#include <Windows.h>
 
 // Constructor – initializes screen dimensions, players, and positions.
 Game::Game(float width, float height)
@@ -79,7 +80,11 @@ Game::Game(float width, float height)
 }
 
 void Game::startNewRound() {
-    deck.reset();
+    // Will shuffle wheh half the cards are remaining so over multiple rounds the count can go up/down
+    if (deck.shuffleReady()) {
+        deck.shuffle();
+        //Reset the card counter here 
+    }
     dealer.clear();
 
     // Reset each player's state.
@@ -121,41 +126,40 @@ void Game::simulateBotMoves() {
         // For each bot, while the bot's current hand is not busted and not standing,
         // use OptimalPlay to decide.
         // We'll assume that bot actions are simulated instantly.
-        bool botTurn = true;
-        while (botTurn && !players[i].isBusted()) {
-            char move = optimalPlay.getMove(players[i].getCurrentHand(), dealerUp);
-            // Moves: 'H' = hit, 'S' = stand, 'D' = double down, 'P' = split.
-            if (move == 'H') {
-                players[i].hit(deck);
-                if (players[i].isBusted())
-                    botTurn = false;
-            }
-            else if (move == 'S') {
-                botTurn = false;
-            }
-            else if (move == 'D') {
-                if (players[i].getCurrentBet() <= players[i].getBalance()) {
-                    players[i].placeBet(players[i].getCurrentBet());
+        
+        do {
+            bool botTurn = true;
+            while (botTurn && !players[i].isBusted()) {
+                char move = optimalPlay.getMove(players[i].getCurrentHand(), dealerUp);
+                // Moves: 'H' = hit, 'S' = stand, 'D' = double down, 'Y' = split.
+                if (move == 'H') {
                     players[i].hit(deck);
+                    if (players[i].isBusted())
+                        botTurn = false;
                 }
-                botTurn = false;
-            }
-            else if (move == 'P') {
-                if (players[i].split()) {
-                    if (players[i].getCurrentHand().getCards().size() < 2)
+                else if (move == 'S') {
+                    botTurn = false;
+                }
+                else if (move == 'D') {
+                    if (players[i].getCurrentBet() <= players[i].getBalance()) {
+                        players[i].placeBet(players[i].getCurrentBet());
                         players[i].hit(deck);
+                    }
+                    botTurn = false;
+                }
+                else if (move == 'Y') {
+                    if (players[i].split()) {
+                        if (players[i].getCurrentHand().getCards().size() < 2)
+                            players[i].hit(deck);
+                    }
                 }
                 else {
-                    // If cannot split, default to hit.
-                    players[i].hit(deck);
+                    // Default to stand.
+                    botTurn = false;
                 }
             }
-            else {
-                // Default to stand.
-                botTurn = false;
-            }
+        } while (players[i].advanceHand());
         }
-    }
     updateDisplay();
 }
 

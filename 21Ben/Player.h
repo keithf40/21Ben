@@ -43,6 +43,7 @@ public:
     std::string getName() const;
     int getBalance() const;
     int getCurrentBet() const;
+    int getTotalHands() const;
 
     // Returns a string describing all the player's hands and balance.
     std::string toString() const;

@@ -20,16 +20,10 @@ int Hand::getTotalValue() const {
 // Adds a card to the hand and updates count immediately
 void Hand::addCard(const Card& card) {
     cards.push_back(card);
-    int cardValue = static_cast<int>(card.getRank());
-
-    if (card.getRank() >= Rank::Jack && card.getRank() <= Rank::King) {
-        cardValue = 10;
-    }
-    else if (card.getRank() == Rank::Ace) {
+    int cardValue = card.getValue();
+    if (card.getRank() == Rank::Ace) {
         aceCount++;
-        cardValue = 11;
     }
-
     totalCount += cardValue;
 
     // Adjust for soft Aces if total exceeds 21
@@ -40,8 +34,9 @@ void Hand::addCard(const Card& card) {
 }
 
 // Returns true if the hand is over 21
-bool Hand::isBust() const {
-    return getTotalValue() > 21;
+bool Hand::isBust() {
+    busted = getTotalValue() > 21;
+    return busted;
 }
 
 // Returns true if the hand is a natural blackjack (Ace + 10)
@@ -66,11 +61,8 @@ bool Hand::isSoft() const {
 // Returns true if the first two cards form a pair (by rank or by 10-value for face cards)
 bool Hand::isPair() const {
     if (cards.size() == 2) {
-        int cardOne = static_cast<int>(cards[0].getRank());
-        int cardTwo = static_cast<int>(cards[1].getRank());
-        // For pair logic, face cards count as 10.
-        if (cardOne > 10 && cardOne <= 13) cardOne = 10;
-        if (cardTwo > 10 && cardTwo <= 13) cardTwo = 10;
+        int cardOne = cards[0].getValue();
+        int cardTwo = cards[1].getValue();
         return cardOne == cardTwo;
     }
     return false;
@@ -85,16 +77,16 @@ const std::vector<Card>& Hand::getCards() const {
 void Hand::removeLastCard() {
     if (!cards.empty()) {
         Card last = cards.back();
-        int cardValue = static_cast<int>(last.getRank());
-        if (last.getRank() >= Rank::Jack && last.getRank() <= Rank::King) {
-            cardValue = 10;
-        }
-        else if (last.getRank() == Rank::Ace) {
-            cardValue = 11;
+        int cardValue = last.getValue();
+        if (last.getRank() == Rank::Ace) {
             if (aceCount > 0)
                 aceCount--;
         }
         totalCount -= cardValue;
         cards.pop_back();
     }
+}
+
+bool Hand::isBusted() const {
+    return busted;
 }

@@ -3,34 +3,16 @@
 // Determines the optimal move based on the hand and the dealer's upcard
 char OptimalPlay::getMove(Hand& hand, Card dealerShowing) {
     int totalHand = hand.getTotalValue();
-    bool isSoft = hand.isSoft();
+    int dealerCard = dealerShowing.getValue();
 
-    // Normalize dealer card value: face cards → 10, Ace → 11
-    int dealerCard = static_cast<int>(dealerShowing.getRank());
-    if (dealerCard > 10 && dealerCard < 14) dealerCard = 10;
-    if (dealerCard == 14) dealerCard = 11;
-
-    // Convert dealerCard into column index (2–11 → 0–9)
-    int dealerIndex = dealerCard - 2;
-
-    // Pair strategy
     if (hand.isPair()) {
-        int pairRank = static_cast<int>(hand.toString()[0]) - '0'; // Extract rank from string
-        if (pairRank > 10 && pairRank < 14) pairRank = 10;
-        if (pairRank == 1) pairRank = 11;
-        int pairIndex = (totalHand / 2) - 2;
-        return SplitPair[pairIndex][dealerIndex];
+        char checkY = SplitPair[(totalHand / 2) - 2][dealerCard - 2];
+        if (checkY == 'Y') return checkY;
     }
-
-    // Soft total strategy
-    if (isSoft) {
-        int softIndex = totalHand - 13;
-        return SoftTotal[softIndex][dealerIndex];
+    if (hand.isSoft()) {
+        return SoftTotal[totalHand - 13][dealerCard - 2];
     }
-
-    // Hard total strategy
-    int hardIndex = totalHand - 4;
-    return HardTotal[hardIndex][dealerIndex];
+    return HardTotal[totalHand - 4][dealerCard - 2];
 }
 
 // Calculates bet size based on count, decks remaining, bankroll, and stealth mode
