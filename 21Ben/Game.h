@@ -41,10 +41,10 @@ private:
     // Core game components.
     Deck deck;
     Dealer dealer;
-    std::vector<Player> players;  // 7 players (index 3 is human)
+    std::vector<Player> players;  // Now 5 players (2 bots on left, 2 bots on right, human in the middle)
 
     // The index of the human player.
-    const int humanIndex = 3;
+    const int humanIndex = 2; // Updated human index for 5 players
 
     bool roundInProgress;
     std::string message;
@@ -69,8 +69,7 @@ private:
     float screenHeight;
 
     // Predefined positions for players’ hands.
-    // We assume players 0,1,2 on the left, 3 (human) in center-bottom,
-    // and 4,5,6 on the right.
+    // For 5 players: left bots at indices 0 and 1, human at index 2, right bots at indices 3 and 4.
     std::vector<sf::Vector2f> playerPositions;
 
     // Texture holder for card images.
