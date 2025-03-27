@@ -17,6 +17,9 @@ public:
     // Get the current count
     int getCount() const;
 
+    // Resets counter to 0
+    bool resetCount();
+
     // Return the count value of a given card (based on strategy)
     int getCardValue(Card card);
 

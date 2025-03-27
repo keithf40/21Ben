@@ -9,7 +9,7 @@ private:
     // H = Hit, D = Double Down, S = Stand
     // Y = Split, N = Don't Split (SplitPair table only)
 
-    // Hard total strategy table: [player total - 5 to 17+] x [dealer card 2–Ace (index 0–9)]
+    // Hard total strategy table: [player total - 4 to 17] x [dealer card 2–Ace (index 0–9)]
     std::vector<std::vector<char>> HardTotal = {
         {'H','H','H','H','H','H','H','H','H','H'}, // 4
         {'H','H','H','H','H','H','H','H','H','H'}, // 5

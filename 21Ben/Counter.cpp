@@ -5,12 +5,16 @@
 // Constructor: initializes count and default strategy
 Counter::Counter() {
     count = 0;
-    strategy = "Standard";
+    strategy = "HiLo";
 }
 
 // Returns the current running count
 int Counter::getCount() const {
     return count;
+}
+//when the deck is shuffled the count needs to be reset
+bool Counter::resetCount() {
+    count = 0;
 }
 
 // Gets the value of a card based on the current counting strategy
