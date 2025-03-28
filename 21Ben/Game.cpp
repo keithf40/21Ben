@@ -46,7 +46,7 @@ Game::Game(float width, float height)
     messageText.setPosition(screenWidth / 2.f - 200.f, screenHeight / 2.f - 50.f);
 
     // Initialize 5 players: 4 bots and 1 human.
-    // Bots will be at indices 0-3; human is at index 4.
+    // Bots are indices 0-3; human is at index 4.
     players.push_back(Player("Bot 1", 200));
     players.push_back(Player("Bot 2", 200));
     players.push_back(Player("Bot 3", 200));
@@ -57,13 +57,13 @@ Game::Game(float width, float height)
     playersCardSprites.resize(players.size());
 
     // Setup positions for each player's hand.
-    // Place bots in the four corners and human at the bottom center.
+    // Place bots in the four corners and human at bottom center.
     playerPositions.resize(5);
     playerPositions[0] = sf::Vector2f(100.f, 80.f);                       // Bot 1: Top left.
     playerPositions[1] = sf::Vector2f(screenWidth - 200.f, 80.f);           // Bot 2: Top right.
     playerPositions[2] = sf::Vector2f(100.f, screenHeight - 250.f);         // Bot 3: Bottom left.
     playerPositions[3] = sf::Vector2f(screenWidth - 200.f, screenHeight - 250.f); // Bot 4: Bottom right.
-    // Human at bottom center. X will be recalculated in updateDisplay() so that the hand is centered.
+    // Human at bottom center. X will be recalculated in updateDisplay() so the hand is centered.
     playerPositions[4] = sf::Vector2f(0.f, screenHeight - 250.f);
 
     // Place an initial bet for each player.
@@ -75,9 +75,9 @@ Game::Game(float width, float height)
     startNewRound();
 
     // Position the action buttons under the human's hand.
-    // Previously, these were positioned at screenHeight - 40.f; now we move them up a little.
+    // Human hand y is at screenHeight - 250, so we place buttons slightly below that.
     float actionX = (screenWidth / 2.f) - 160.f;
-    float actionY = screenHeight - 50.f;  // Moved up slightly from -40.f to -50.f.
+    float actionY = screenHeight - 50.f;  // moved up a tad so they don't cover the player cards
     hitButton.setPosition(actionX, actionY);
     standButton.setPosition(actionX + 120.f, actionY);
     doubleButton.setPosition(actionX + 240.f, actionY);
@@ -118,7 +118,8 @@ void Game::updateBotMoves() {
 
     // Process bot moves only if it's currently a bot's turn.
     if (currentPlayerTurn < players.size() && currentPlayerTurn != humanIndex) {
-        if (botClock.getElapsedTime().asSeconds() >= 3.0f) { // 3-second delay.
+        // Change delay to 2 seconds.
+        if (botClock.getElapsedTime().asSeconds() >= 2.0f) {
             Card dealerUp = dealer.getHand().getCards()[0];
             char move = optimalPlay.getMove(players[currentPlayerTurn].getCurrentHand(), dealerUp);
             if (move == 'H') {
@@ -186,7 +187,7 @@ void Game::updateDisplay() {
     const auto& dCards = dealer.getHand().getCards();
     size_t dCount = dCards.size();
     if (roundInProgress && dCount >= 2) {
-        // Dealer hand moved up: y = 20.
+        // Dealer hand is drawn at y = 20.
         float totalDealerWidth = 2 * (cardWidth * scaleFactor) + cardMargin;
         float startXDealer = (screenWidth - totalDealerWidth) / 2.f;
         sf::Sprite sprite;
@@ -218,35 +219,28 @@ void Game::updateDisplay() {
 
 void Game::finishRound() {
     int dealerTotal = dealer.dealerTurn(deck);
-    std::string outcomes;
-    for (size_t i = 0; i < players.size(); i++) {
-        int handTotal = players[i].getCurrentHand().getTotalValue();
-        outcomes += players[i].getName() + ": ";
-        if (players[i].getCurrentHand().isBlackjack()) {
-            outcomes += "Blackjack!";
-            players[i].addWinnings(static_cast<int>(players[i].getCurrentBet() * 2.5));
-        }
-        else if (handTotal > 21) {
-            outcomes += "Busted";
-        }
-        else if (dealerTotal > 21) {
-            outcomes += "Win";
-            players[i].addWinnings(players[i].getCurrentBet() * 2);
-        }
-        else if (handTotal > dealerTotal) {
-            outcomes += "Win";
-            players[i].addWinnings(players[i].getCurrentBet() * 2);
-        }
-        else if (handTotal == dealerTotal) {
-            outcomes += "Push";
-            players[i].addWinnings(players[i].getCurrentBet());
-        }
-        else {
-            outcomes += "Lose";
-        }
-        outcomes += "\n";
+    // Only display the outcome for the human player.
+    int humanTotal = players[humanIndex].getCurrentHand().getTotalValue();
+    std::string outcome = "Human: ";
+    if (players[humanIndex].getCurrentHand().isBlackjack()) {
+        outcome += "Blackjack!";
     }
-    message = outcomes + "Click Deal to restart.";
+    else if (humanTotal > 21) {
+        outcome += "Busted";
+    }
+    else if (dealerTotal > 21) {
+        outcome += "Win";
+    }
+    else if (humanTotal > dealerTotal) {
+        outcome += "Win";
+    }
+    else if (humanTotal == dealerTotal) {
+        outcome += "Push";
+    }
+    else {
+        outcome += "Lose";
+    }
+    message = outcome;
     roundInProgress = false;
     updateDisplay();
 }
@@ -420,8 +414,6 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
     }
 }
 
-
-
 void Game::draw(sf::RenderWindow& window) {
     // First, draw all players' card sprites.
     for (const auto& vec : playersCardSprites) {
@@ -433,8 +425,7 @@ void Game::draw(sf::RenderWindow& window) {
         window.draw(sprite);
     // Then, draw the message text.
     window.draw(messageText);
-    // Finally, draw the human action buttons on top if it's the human's turn,
-    // or the Deal button if not in round.
+    // Finally, draw the human action buttons (or the Deal button) on top.
     if (!roundInProgress)
         window.draw(dealButton);
     else {
