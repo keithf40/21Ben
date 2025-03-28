@@ -11,7 +11,7 @@
 #include "Player.h"
 #include "Texture.h"      // For card images
 #include "OptimalPlay.h"  // For bot strategy
-
+#include "Counter.h"
 class Game {
 public:
     enum class Option { DEAL, NONE };
@@ -30,7 +30,7 @@ public:
 
 private:
     sf::Font font;
-
+    
     // UI Buttons:
     sf::Text dealButton;      // Shown when round is not active.
     sf::Text hitButton;       // For human actions.
@@ -41,6 +41,7 @@ private:
     // Core game components.
     Deck deck;
     Dealer dealer;
+    Counter counter;
     std::vector<Player> players;  // Total of 5 players: 4 bots and 1 human.
 
     // Human player index is now 4.

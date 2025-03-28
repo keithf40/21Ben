@@ -7,14 +7,16 @@ void Dealer::clear() {
 }
 
 // Dealer draws one card from the deck
-void Dealer::hit(Deck& deck) {
-    hand.addCard(deck.dealCard());
+void Dealer::hit(Deck& deck, Counter& counter, bool faceDown) {
+    Card card = deck.dealCard();
+    hand.addCard(card);
+    if (!faceDown) counter.modifyCount(card);
 }
 
 // Dealer keeps hitting until hand total is 17 or more
-int Dealer::dealerTurn(Deck& deck) {
+int Dealer::dealerTurn(Deck& deck, Counter& counter) {
     while (hand.getTotalValue() < 17) {
-        hit(deck);
+        hit(deck, counter, false);
     }
     return hand.getTotalValue();
 }

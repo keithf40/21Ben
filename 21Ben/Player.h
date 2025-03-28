@@ -4,6 +4,7 @@
 #include <vector>
 #include "Deck.h"
 #include "Hand.h"
+#include "Counter.h"
 
 // Class representing a player in Blackjack with support for splitting hands.
 class Player {
@@ -25,7 +26,7 @@ public:
     void placeBet(int amount);
 
     // Player draws a card from the deck for the current hand
-    void hit(Deck& deck);
+    void hit(Deck& deck, Counter& counter);
 
     // Player stands on the current hand (no action here; game advances hands)
     void stand();

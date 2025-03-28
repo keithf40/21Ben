@@ -85,7 +85,10 @@ Game::Game(float width, float height)
 }
 
 void Game::startNewRound() {
-    deck.reset();
+    if (deck.shuffleReady()) {
+        deck.reset();
+        counter.resetCount();
+    }
     dealer.clear();
     for (auto& p : players) {
         p.reset();
@@ -98,12 +101,12 @@ void Game::startNewRound() {
 
     // Deal two cards to each player.
     for (auto& p : players) {
-        p.hit(deck);
-        p.hit(deck);
+        p.hit(deck, counter);
+        p.hit(deck, counter);
     }
     // Deal two cards to dealer.
-    dealer.hit(deck);
-    dealer.hit(deck);
+    dealer.hit(deck, counter, false);
+    dealer.hit(deck, counter, true);
     updateDisplay();
 
     // Check if human (player index 4) has blackjack.
@@ -123,7 +126,7 @@ void Game::updateBotMoves() {
             Card dealerUp = dealer.getHand().getCards()[0];
             char move = optimalPlay.getMove(players[currentPlayerTurn].getCurrentHand(), dealerUp);
             if (move == 'H') {
-                players[currentPlayerTurn].hit(deck);
+                players[currentPlayerTurn].hit(deck, counter);
                 if (players[currentPlayerTurn].isBusted()) {
                     if (!players[currentPlayerTurn].advanceHand())
                     currentPlayerTurn++;
@@ -137,21 +140,13 @@ void Game::updateBotMoves() {
             else if (move == 'D') {
                 if (players[currentPlayerTurn].getCurrentBet() <= players[currentPlayerTurn].getBalance()) {
                     players[currentPlayerTurn].placeBet(players[currentPlayerTurn].getCurrentBet());
-                    players[currentPlayerTurn].hit(deck);
+                    players[currentPlayerTurn].hit(deck, counter);
                 }
                 if (!players[currentPlayerTurn].advanceHand())
                     currentPlayerTurn++;
             }
             else if (move == 'Y') {
-                if (players[currentPlayerTurn].split()) {
-                    if (players[currentPlayerTurn].getCurrentHand().getCards().size() < 2)
-                        players[currentPlayerTurn].hit(deck);
-                }
-                else {
-                    players[currentPlayerTurn].hit(deck);
-                }
-                if (!players[currentPlayerTurn].advanceHand())
-                    currentPlayerTurn++;
+                players[currentPlayerTurn].split();
             }
             else {
                 if (!players[currentPlayerTurn].advanceHand())
@@ -225,7 +220,7 @@ void Game::updateDisplay() {
 }
 
 void Game::finishRound() {
-    int dealerTotal = dealer.dealerTurn(deck);
+    int dealerTotal = dealer.dealerTurn(deck, counter);
     // Only display the outcome for the human player.
     int humanTotal = players[humanIndex].getCurrentHand().getTotalValue();
     std::string outcome = "Human: ";
@@ -249,6 +244,9 @@ void Game::finishRound() {
     }
     message = outcome;
     roundInProgress = false;
+    //adds the face down dealer card to the running count
+    Hand dealerHand = dealer.getHand();
+    counter.modifyCount(dealerHand.getCards()[1]);
     updateDisplay();
 }
 
@@ -340,7 +338,7 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
             // Only process human actions if it's the human's turn.
             if (currentPlayerTurn == humanIndex) {
                 if (isTextClicked(hitButton, window)) {
-                    players[humanIndex].hit(deck);
+                    players[humanIndex].hit(deck, counter);
                     if (players[humanIndex].isBusted()) {
                         message = "You busted!";
                         finishRound();
@@ -354,7 +352,7 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
                 else if (isTextClicked(doubleButton, window)) {
                     if (players[humanIndex].getCurrentBet() <= players[humanIndex].getBalance()) {
                         players[humanIndex].placeBet(players[humanIndex].getCurrentBet());
-                        players[humanIndex].hit(deck);
+                        players[humanIndex].hit(deck, counter);
                         finishRound();
                     }
                     updateDisplay();
@@ -362,7 +360,7 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
                 else if (isTextClicked(splitButton, window)) {
                     if (players[humanIndex].split()) {
                         if (players[humanIndex].getCurrentHand().getCards().size() < 2)
-                            players[humanIndex].hit(deck);
+                            players[humanIndex].hit(deck, counter);
                         updateDisplay();
                     }
                     else {
@@ -383,7 +381,7 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
             if (currentPlayerTurn == humanIndex) {
                 switch (event.key.code) {
                 case sf::Keyboard::H:
-                    players[humanIndex].hit(deck);
+                    players[humanIndex].hit(deck, counter);
                     if (players[humanIndex].isBusted()) {
                         message = "You busted!";
                         finishRound();
@@ -397,7 +395,7 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
                 case sf::Keyboard::P:
                     if (players[humanIndex].split()) {
                         if (players[humanIndex].getCurrentHand().getCards().size() < 2)
-                            players[humanIndex].hit(deck);
+                            players[humanIndex].hit(deck, counter);
                         updateDisplay();
                     }
                     else {
@@ -408,7 +406,7 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
                 case sf::Keyboard::X:
                     if (players[humanIndex].getCurrentBet() <= players[humanIndex].getBalance()) {
                         players[humanIndex].placeBet(players[humanIndex].getCurrentBet());
-                        players[humanIndex].hit(deck);
+                        players[humanIndex].hit(deck, counter);
                         finishRound();
                     }
                     updateDisplay();
