@@ -10,9 +10,9 @@ char OptimalPlay::getMove(Hand& hand, Card dealerShowing) {
         if (checkY == 'Y') return checkY;
     }
     if (hand.isSoft()) {
-        return SoftTotal[totalHand - 13][dealerCard - 2];
+        return SoftTotal[totalHand - 11][dealerCard - 2];
     }
-    return HardTotal[totalHand - 4][dealerCard - 2];
+    return HardTotal[totalHand - 2][dealerCard - 2];
 }
 
 // Calculates bet size based on count, decks remaining, bankroll, and stealth mode
