@@ -124,18 +124,23 @@ void Game::updateBotMoves() {
             char move = optimalPlay.getMove(players[currentPlayerTurn].getCurrentHand(), dealerUp);
             if (move == 'H') {
                 players[currentPlayerTurn].hit(deck);
-                if (players[currentPlayerTurn].isBusted())
+                if (players[currentPlayerTurn].isBusted()) {
+                    if (!players[currentPlayerTurn].advanceHand())
                     currentPlayerTurn++;
+                }
+                    
             }
             else if (move == 'S') {
-                currentPlayerTurn++;
+                if (!players[currentPlayerTurn].advanceHand())
+                    currentPlayerTurn++;
             }
             else if (move == 'D') {
                 if (players[currentPlayerTurn].getCurrentBet() <= players[currentPlayerTurn].getBalance()) {
                     players[currentPlayerTurn].placeBet(players[currentPlayerTurn].getCurrentBet());
                     players[currentPlayerTurn].hit(deck);
                 }
-                currentPlayerTurn++;
+                if (!players[currentPlayerTurn].advanceHand())
+                    currentPlayerTurn++;
             }
             else if (move == 'Y') {
                 if (players[currentPlayerTurn].split()) {
@@ -145,10 +150,12 @@ void Game::updateBotMoves() {
                 else {
                     players[currentPlayerTurn].hit(deck);
                 }
-                currentPlayerTurn++;
+                if (!players[currentPlayerTurn].advanceHand())
+                    currentPlayerTurn++;
             }
             else {
-                currentPlayerTurn++;
+                if (!players[currentPlayerTurn].advanceHand())
+                    currentPlayerTurn++;
             }
             botClock.restart();
             updateDisplay();
