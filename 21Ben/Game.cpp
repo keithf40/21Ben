@@ -137,7 +137,7 @@ void Game::updateBotMoves() {
                 }
                 currentPlayerTurn++;
             }
-            else if (move == 'P') {
+            else if (move == 'Y') {
                 if (players[currentPlayerTurn].split()) {
                     if (players[currentPlayerTurn].getCurrentHand().getCards().size() < 2)
                         players[currentPlayerTurn].hit(deck);
