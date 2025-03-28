@@ -33,3 +33,21 @@ public:
 int HiLo(Card& card);
 
 int KO(Card& card);
+
+int HiOpt1(Card& card);
+
+int HiOpt2(Card& card);
+
+int Mentor(Card& card);
+
+int Omega2(Card& card);
+
+int RPC(Card& card);
+
+int RAPC(Card& card);
+
+int R14C(Card& card);
+
+int WongHalves(Card& card);
+
+int Zen(Card& card);
