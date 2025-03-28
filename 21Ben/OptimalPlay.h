@@ -10,7 +10,10 @@ private:
     // Y = Split, N = Don't Split (SplitPair table only)
 
     // Hard total strategy table: [player total - 4 to 17] x [dealer card 2–Ace (index 0–9)]
+    // 2 and 3 were added incase a user splits on a 2 or 3
     std::vector<std::vector<char>> HardTotal = {
+        {'H','H','H','H','H','H','H','H','H','H'}, // 2
+        {'H','H','H','H','H','H','H','H','H','H'}, // 3
         {'H','H','H','H','H','H','H','H','H','H'}, // 4
         {'H','H','H','H','H','H','H','H','H','H'}, // 5
         {'H','H','H','H','H','H','H','H','H','H'}, // 6
@@ -33,6 +36,8 @@ private:
 
     // Soft total strategy table: [total with Ace counted as 11 (13 to 21)] x [dealer card 2–Ace]
     std::vector<std::vector<char>> SoftTotal = {
+        {'D','D','D','D','D','D','D','D','D','D'}, // A
+        {'D','D','D','D','D','S','S','H','H','H'}, // A+1 (impossible)
         {'H','H','H','D','D','H','H','H','H','H'}, // A+2 (13)
         {'H','H','H','D','D','H','H','H','H','H'}, // A+3
         {'H','H','D','D','D','H','H','H','H','H'}, // A+4

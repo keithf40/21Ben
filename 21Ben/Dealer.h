@@ -3,6 +3,7 @@
 #include <string>
 #include "Deck.h"
 #include "Hand.h"
+#include "Counter.h"
 
 // Class representing the dealer in a Blackjack game
 class Dealer {
@@ -11,10 +12,10 @@ private:
 
 public:
     // Executes the dealer's turn logic; returns hand total
-    int dealerTurn(Deck& deck);
+    int dealerTurn(Deck& deck, Counter& counter);
 
     // Dealer draws one card from the deck
-    void hit(Deck& deck);
+    void hit(Deck& deck, Counter& counter, bool faceDown);
 
     // Clears the dealer's hand
     void clear();

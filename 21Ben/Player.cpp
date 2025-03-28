@@ -23,8 +23,10 @@ void Player::placeBet(int amount) {
     balance -= amount;
 }
 
-void Player::hit(Deck& deck) {
-    hands[currentHandIndex].addCard(deck.dealCard());
+void Player::hit(Deck& deck, Counter& counter) {
+    Card card = deck.dealCard();
+    hands[currentHandIndex].addCard(card);
+    counter.modifyCount(card);
 }
 
 void Player::stand() {
