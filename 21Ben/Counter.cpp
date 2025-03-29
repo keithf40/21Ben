@@ -69,6 +69,23 @@ void Counter::setStrategy(std::string newStrategy) {
     }
 }
 
+// Calculates bet size based on count, decks remaining, bankroll, and stealth mode
+int Counter::getBet(int decksRemaining, int bankroll, int minbet, bool sleuthMode) {
+    int trueCount = count / decksRemaining;
+    int bettingUnit = bankroll / 1000;
+    int totalBetSize = bettingUnit * (trueCount - 1);
+
+    // Minimum table bet
+    if (totalBetSize < minbet) totalBetSize = minbet;
+
+    // Cap bets if sleuth mode is on (avoid detection)
+    if (totalBetSize > bankroll / 4 && sleuthMode) {
+        totalBetSize = bankroll / 4;
+    }
+
+    return totalBetSize;
+}
+
 // Different counting strategies, is set to func variable
 int HiLo(Card& card) {
     switch (card.getRank()) {

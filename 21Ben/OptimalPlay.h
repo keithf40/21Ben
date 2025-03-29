@@ -68,5 +68,5 @@ public:
     char getMove(Hand& hand, Card dealerShowing);
 
     // Returns a bet amount based on running count, decks remaining, bankroll, and "sleuth" mode
-    int getBet(int runningCount, int decksRemaining, int bankroll, bool sleuthMode);
+    int getBet(int runningCount, int decksRemaining, int bankroll, int minbet, bool sleuthMode);
 };

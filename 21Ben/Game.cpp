@@ -1,13 +1,19 @@
 #include "Game.h"
 #include <sstream>
 
-Game::Game(float width, float height)
+Game::Game(float width, float height, std::string countingMethod, std::vector<int> gameSettings)
     : roundInProgress(false), screenWidth(width), screenHeight(height)
 {
     if (!font.loadFromFile("assets/ttfFont.ttf")) {
         std::cerr << "Font not found!" << std::endl;
     }
-
+    if (gameSettings[0]) {
+        minBet = gameSettings[1];
+        deck = Deck(gameSettings[3]);
+        startingMoney = gameSettings[2];
+        //do player position
+    }
+    counter.setStrategy(countingMethod);
     // Load all textures.
     textures.loadTextures();
 
@@ -53,11 +59,11 @@ Game::Game(float width, float height)
 
     // Initialize 5 players: 4 bots and 1 human.
     // Bots are indices 0-3; human is at index 4.
-    players.push_back(Player("Bot 1", 200));
-    players.push_back(Player("Bot 2", 200));
-    players.push_back(Player("Bot 3", 200));
-    players.push_back(Player("Bot 4", 200));
-    players.push_back(Player("Human", 200));
+    players.push_back(Player("Bot 1", startingMoney));
+    players.push_back(Player("Bot 2", startingMoney));
+    players.push_back(Player("Bot 3", startingMoney));
+    players.push_back(Player("Bot 4", startingMoney));
+    players.push_back(Player("Human", startingMoney));
 
     // Reserve space for players’ card sprites.
     playersCardSprites.resize(players.size());
@@ -74,7 +80,7 @@ Game::Game(float width, float height)
 
     // Place an initial bet for each player.
     for (auto& p : players) {
-        p.placeBet(10);
+        p.placeBet(minBet);
     }
 
     // Start round and set turn order.
@@ -98,7 +104,7 @@ void Game::startNewRound() {
     dealer.clear();
     for (auto& p : players) {
         p.reset();
-        p.placeBet(10);
+        p.placeBet(counter.getBet(deck.getDecksRemaining(), p.getBalance(), minBet, false));
     }
     roundInProgress = true;
     message = "";

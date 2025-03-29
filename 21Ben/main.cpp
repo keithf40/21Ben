@@ -98,7 +98,7 @@ int main() {
                         else if (selected == PlayMenu::Option::START) {
                             // Switch to game state and create the game screen at this point
                             currState = GameState::GAME;
-                            gameScreen = std::make_unique<Game>(1200, 800);
+                            gameScreen = std::make_unique<Game>(1200, 800, playMenu.getSelectedStrategy(), playMenu.getGameSettings());
                         }
                     }
                 }

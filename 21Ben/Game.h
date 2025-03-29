@@ -16,7 +16,7 @@ class Game {
 public:
     enum class Option { DEAL, QUIT, NONE };
 
-    Game(float width, float height);
+    Game(float width, float height, std::string countingMethod, std::vector<int> gameSettings);
 
     // Draw the game screen including card images, messages, and action buttons.
     void draw(sf::RenderWindow& window);
@@ -48,6 +48,9 @@ private:
 
     // Human player index is now 4.
     const int humanIndex = 4;
+    
+    int minBet = 15;
+    int startingMoney = 100;
 
     std::size_t selectedIndex;
 

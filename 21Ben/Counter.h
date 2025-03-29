@@ -28,6 +28,8 @@ public:
 
     // Set a new strategy name
     void setStrategy(std::string newStrategy);
+
+    int getBet(int decksRemaining, int bankroll, int minbet, bool sleuthMode);
 };
 // Card counting strategies
 int HiLo(Card& card);
