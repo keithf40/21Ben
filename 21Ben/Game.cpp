@@ -39,6 +39,12 @@ Game::Game(float width, float height)
     splitButton.setCharacterSize(40);
     splitButton.setFillColor(sf::Color::White);
 
+    quitButton.setFont(font);
+    quitButton.setString("Quit");
+    quitButton.setCharacterSize(40);
+    quitButton.setFillColor(sf::Color::White);
+    quitButton.setPosition(sf::Vector2f(10.f, height / 1.1f));
+
     // Setup message text.
     messageText.setFont(font);
     messageText.setCharacterSize(40);
@@ -329,7 +335,22 @@ sf::Texture& Game::getCardTexture(const Card& card) {
 
 void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
     // Process both mouse and keyboard events.
+    if (event.type == sf::Event::MouseMoved) {
+        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+        if (quitButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
+            quitButton.setFillColor(sf::Color::Yellow);
+        }
+        else {
+            quitButton.setFillColor(sf::Color::White);
+        }
+    }
+
     if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+        if (isTextClicked(quitButton, window)) {
+            selectedIndex = 1;  // Set selected index to 1 for Quit.
+            // Optionally, add additional logic for quitting if needed.
+        }
+        
         if (!roundInProgress) {
             if (isTextClicked(dealButton, window))
                 startNewRound();
@@ -431,6 +452,7 @@ void Game::draw(sf::RenderWindow& window) {
     // Then, draw the message text.
     window.draw(messageText);
     // Finally, draw the human action buttons (or the Deal button) on top.
+    window.draw(quitButton);
     if (!roundInProgress)
         window.draw(dealButton);
     else {
@@ -447,5 +469,13 @@ void Game::draw(sf::RenderWindow& window) {
 }
 
 Game::Option Game::getSelectedOption() const {
-    return Option::NONE;
+    switch (selectedIndex) {
+    case 0: return Option::DEAL;
+    case 1: return Option::QUIT;
+    default: return Option::NONE;
+    }
+}
+
+sf::FloatRect Game::getSelectedOptionPos() const {
+    return quitButton.getGlobalBounds();
 }

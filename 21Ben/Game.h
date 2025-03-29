@@ -14,7 +14,7 @@
 #include "Counter.h"
 class Game {
 public:
-    enum class Option { DEAL, NONE };
+    enum class Option { DEAL, QUIT, NONE };
 
     Game(float width, float height);
 
@@ -24,6 +24,7 @@ public:
     void handleEvent(const sf::Event& event, sf::RenderWindow& window);
 
     Option getSelectedOption() const;
+    sf::FloatRect getSelectedOptionPos() const;
 
     // Start a new round.
     void startNewRound();
@@ -37,6 +38,7 @@ private:
     sf::Text standButton;     // For human actions.
     sf::Text doubleButton;    // For human actions.
     sf::Text splitButton;     // For human actions.
+    sf::Text quitButton;      // Quits the game and returns to main menu.
 
     // Core game components.
     Deck deck;
@@ -46,6 +48,8 @@ private:
 
     // Human player index is now 4.
     const int humanIndex = 4;
+
+    std::size_t selectedIndex;
 
     bool roundInProgress;
     std::string message;

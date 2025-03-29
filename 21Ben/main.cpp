@@ -4,6 +4,7 @@
 #include "PlayMenu.h"
 #include "Game.h"
 #include "Texture.h"
+#include <memory> // For std::unique_ptr
 
 // Enum to manage different game states
 enum class GameState { MAIN_MENU, PLAY, SIMULATE, GAME };
@@ -24,11 +25,13 @@ int main() {
     settingsBackground.setTexture(&textures.settingsBackgroundImage);
     gameBackground.setTexture(&textures.gameBackgroundImage);
 
-    // Initialize menus and game screen
+    // Initialize menus
     MainMenu mainMenu(1200, 800);
     SimulateMenu simulateMenu(1200, 800);
     PlayMenu playMenu(1200, 800);
-    Game gameScreen(1200, 800);
+
+    // Use a smart pointer for the game screen and delay its creation
+    std::unique_ptr<Game> gameScreen = nullptr;
 
     // Start at the main menu
     GameState currState = GameState::MAIN_MENU;
@@ -48,6 +51,7 @@ int main() {
             // Handle input based on current state
             switch (currState) {
             case GameState::MAIN_MENU:
+                gameScreen.reset();
                 mainMenu.handleEvent(event, window);
                 if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
@@ -81,22 +85,31 @@ int main() {
                 if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                     PlayMenu::Option selected = playMenu.getSelectedOption();
-                    // Only trigger if the mouse click is within the bounds of the selected option
                     if (playMenu.getSelectedOptionPos().contains(static_cast<sf::Vector2f>(mousePos))) {
                         if (selected == PlayMenu::Option::BACK) {
                             currState = GameState::MAIN_MENU;
                         }
                         else if (selected == PlayMenu::Option::START) {
+                            // Switch to game state and create the game screen at this point
                             currState = GameState::GAME;
+                            gameScreen = std::make_unique<Game>(1200, 800);
                         }
                     }
                 }
                 break;
 
             case GameState::GAME:
-                gameScreen.handleEvent(event, window);
-                if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
-                    // In this example, gameScreen's Skip button will handle restarting the round.
+                if (gameScreen) {
+                    gameScreen->handleEvent(event, window);
+                    if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+                        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                        Game::Option selected = gameScreen->getSelectedOption();
+                        if (gameScreen->getSelectedOptionPos().contains(static_cast<sf::Vector2f>(mousePos))) {
+                            if (selected == Game::Option::QUIT) {
+                                currState = GameState::MAIN_MENU;
+                            }
+                        }
+                    }
                 }
                 break;
             }
@@ -122,11 +135,11 @@ int main() {
 
         case GameState::GAME:
             window.draw(gameBackground);
-            gameScreen.draw(window);
+            if (gameScreen) {
+                gameScreen->draw(window);
+            }
             break;
         }
-
-        // Display everything
         window.display();
     }
 
