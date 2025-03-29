@@ -73,9 +73,15 @@ int main() {
             case GameState::SIMULATE:
                 simulateMenu.handleEvent(event, window);
                 if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                     SimulateMenu::Option selected = simulateMenu.getSelectedOption();
-                    if (selected == SimulateMenu::Option::BACK) {
-                        currState = GameState::MAIN_MENU;
+                    if (playMenu.getSelectedOptionPos().contains(static_cast<sf::Vector2f>(mousePos))) {
+                        if (selected == SimulateMenu::Option::BACK) {
+                            currState = GameState::MAIN_MENU;
+                        }
+                        else if (selected == SimulateMenu::Option::START) {
+                            // To implement
+                        }
                     }
                 }
                 break;
