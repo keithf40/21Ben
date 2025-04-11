@@ -23,10 +23,11 @@ void Player::placeBet(int amount) {
     balance -= amount;
 }
 
-void Player::hit(Deck& deck, Counter& counter) {
+Card Player::hit(Deck& deck, Counter& counter) {
     Card card = deck.dealCard();
     hands[currentHandIndex].addCard(card);
     counter.modifyCount(card);
+    return card;
 }
 
 void Player::stand() {
@@ -111,4 +112,8 @@ bool Player::allHandsPlayed() const {
 
 int Player::getTotalHands() const {
     return hands.size();
+}
+
+void Player::setBank(int bank) {
+    this->balance = bank;
 }

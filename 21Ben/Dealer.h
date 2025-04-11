@@ -15,7 +15,7 @@ public:
     int dealerTurn(Deck& deck, Counter& counter);
 
     // Dealer draws one card from the deck
-    void hit(Deck& deck, Counter& counter, bool faceDown);
+    Card hit(Deck& deck, Counter& counter, bool faceDown);
 
     // Clears the dealer's hand
     void clear();

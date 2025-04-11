@@ -26,7 +26,7 @@ public:
     void placeBet(int amount);
 
     // Player draws a card from the deck for the current hand
-    void hit(Deck& deck, Counter& counter);
+    Card hit(Deck& deck, Counter& counter);
 
     // Player stands on the current hand (no action here; game advances hands)
     void stand();
@@ -66,4 +66,6 @@ public:
 
     // Checks if all hands have been played.
     bool allHandsPlayed() const;
+
+    void setBank(int bank);
 };

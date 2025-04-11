@@ -9,6 +9,11 @@ Counter::Counter() {
     stratFunc = HiLo;
 }
 
+Counter::Counter(std::string strategy) {
+    count = 0;
+    setStrategy(strategy);
+}
+
 // Returns the current running count
 int Counter::getCount() const {
     return count;
