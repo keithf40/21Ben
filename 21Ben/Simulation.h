@@ -9,6 +9,8 @@
 #include "OptimalPlay.h"  
 #include "Counter.h"
 #include "memory"
+#include <fstream>
+
 class Simulation {
 public:
     Simulation(int deckSize, int minBet, int startingMoney, int playerPosition, std::string playStyleOne);
@@ -22,7 +24,8 @@ private:
     std::unique_ptr<Deck> deck;
     std::unique_ptr<Counter> counterOne;
     std::unique_ptr<Counter> counterTwo;
-
+    std::vector<float> betRatios;
+    std::vector<long long> balances;
     std::vector<Player> players;  //All bots
     OptimalPlay optimal;
 

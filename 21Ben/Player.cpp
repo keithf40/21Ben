@@ -14,12 +14,12 @@ void Player::reset() {
     currentBet = 0;
 }
 
-void Player::placeBet(int amount) {
+void Player::placeBet(long long amount) {
     if (amount > balance) {
         std::cerr << "Not enough balance to place this bet\n";
         return;
     }
-    currentBet = amount;
+    hands[currentHandIndex].addBet(amount);
     balance -= amount;
 }
 
@@ -50,12 +50,12 @@ std::string Player::getName() const {
     return name;
 }
 
-int Player::getBalance() const {
+long long Player::getBalance() const {
     return balance;
 }
 
-int Player::getCurrentBet() const {
-    return currentBet;
+long long Player::getCurrentBet() const {
+    return hands[currentHandIndex].getBet();
 }
 
 std::string Player::toString() const {
@@ -90,6 +90,7 @@ bool Player::split() {
         Hand newHand;
         newHand.addCard(hands[currentHandIndex].getCards().back());
         // Add the new hand.
+        newHand.addBet(currentBet);
         hands.push_back(newHand);
         // Remove the second card from the current hand.
         hands[currentHandIndex].removeLastCard();
@@ -114,6 +115,28 @@ int Player::getTotalHands() const {
     return hands.size();
 }
 
-void Player::setBank(int bank) {
+void Player::setBank(long long bank) {
     this->balance = bank;
+}
+
+bool Player::doubleDown() {
+    int bet = hands[currentHandIndex].getBet();
+    if (bet > balance) return false;
+    hands[currentHandIndex].addBet(bet * 2);
+    balance -= bet;
+    return true;
+}
+
+long long Player::totalWinnings(int dealerTotal, bool dealerBlackjack) {
+    long long totalWinning = 0;
+    for (auto H : hands) {
+        if ((dealerBlackjack and H.isBlackjack()) or (dealerTotal == H.getTotalValue())) {
+            totalWinning += H.getBet();
+        }
+        else if (not dealerBlackjack and H.isBlackjack()) totalWinning += H.getBet() * 2.5;
+        else {
+            if (dealerTotal < H.getTotalValue()) totalWinning += H.getBet() * 2;
+        }
+    }
+    return totalWinning;
 }

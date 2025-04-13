@@ -66,7 +66,4 @@ private:
 public:
     // Returns the best move ('H', 'S', 'D', 'Y', 'N') based on hand and dealer's upcard
     char getMove(Hand& hand, Card dealerShowing);
-
-    // Returns a bet amount based on running count, decks remaining, bankroll, and "sleuth" mode
-    int getBet(int runningCount, int decksRemaining, int bankroll, int minbet, bool sleuthMode);
 };

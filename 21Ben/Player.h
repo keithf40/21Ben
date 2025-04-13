@@ -12,8 +12,8 @@ private:
     std::string name;              // Player's name
     std::vector<Hand> hands;       // Player's hands (for splits)
     int currentHandIndex;          // Index of the currently active hand
-    int balance;                   // Player's current money
-    int currentBet;                // Bet for each hand (assumed equal for simplicity)
+    long long balance;                   // Player's current money
+    long long currentBet;                // Bet for each hand (assumed equal for simplicity)
 
 public:
     // Constructor with player name and starting balance
@@ -23,7 +23,7 @@ public:
     void reset();
 
     // Places a bet for the round (bet applies to each hand)
-    void placeBet(int amount);
+    void placeBet(long long amount);
 
     // Player draws a card from the deck for the current hand
     Card hit(Deck& deck, Counter& counter);
@@ -42,8 +42,8 @@ public:
 
     // Getters
     std::string getName() const;
-    int getBalance() const;
-    int getCurrentBet() const;
+    long long getBalance() const;
+    long long getCurrentBet() const;
     int getTotalHands() const;
 
     // Returns a string describing all the player's hands and balance.
@@ -67,5 +67,9 @@ public:
     // Checks if all hands have been played.
     bool allHandsPlayed() const;
 
-    void setBank(int bank);
+    void setBank(long long bank);
+
+    bool doubleDown();
+
+    long long totalWinnings(int dealerTotal, bool dealerBlackjack);
 };
