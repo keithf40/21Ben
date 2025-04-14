@@ -90,3 +90,11 @@ void Hand::removeLastCard() {
 bool Hand::isBusted() const {
     return busted;
 }
+
+void Hand::addBet(int bet) {
+    this->bet = bet;
+}
+
+int Hand::getBet() const {
+    return this->bet;
+}

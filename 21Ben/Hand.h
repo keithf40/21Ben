@@ -10,6 +10,7 @@ private:
     std::vector<Card> cards;  // Cards currently in the hand
     int totalCount = 0;       // Running total value of the hand
     int aceCount = 0;         // Number of Aces in the hand
+    int bet = 0;
     bool busted = false;
 public:
     // Constructor
@@ -46,4 +47,8 @@ public:
     void removeLastCard();
 
     bool isBusted() const;
+
+    void addBet(int bet);
+
+    int getBet() const;
 };

@@ -14,6 +14,8 @@ public:
     // Constructor
     Counter();
 
+    Counter(std::string strategy);
+
     // Get the current count
     int getCount() const;
 
