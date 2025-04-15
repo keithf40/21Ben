@@ -11,7 +11,7 @@ Game::Game(float width, float height, std::string countingMethod, std::vector<in
         minBet = gameSettings[1];
         deck = Deck(gameSettings[3]);
         startingMoney = gameSettings[2];
-        //do player position
+        // do player position
     }
     counter.setStrategy(countingMethod);
     // Load all textures.
@@ -141,9 +141,8 @@ void Game::updateBotMoves() {
                 players[currentPlayerTurn].hit(deck, counter);
                 if (players[currentPlayerTurn].isBusted()) {
                     if (!players[currentPlayerTurn].advanceHand())
-                    currentPlayerTurn++;
+                        currentPlayerTurn++;
                 }
-                    
             }
             else if (move == 'S') {
                 if (!players[currentPlayerTurn].advanceHand())
@@ -340,29 +339,66 @@ sf::Texture& Game::getCardTexture(const Card& card) {
 }
 
 void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
-    // Process both mouse and keyboard events.
+    // Process mouse and keyboard events.
     if (event.type == sf::Event::MouseMoved) {
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+        // Highlight Quit button
         if (quitButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
             quitButton.setFillColor(sf::Color::Yellow);
         }
         else {
             quitButton.setFillColor(sf::Color::White);
         }
+        // Highlight Deal button when round is not in progress.
+        if (!roundInProgress) {
+            if (dealButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
+                dealButton.setFillColor(sf::Color::Yellow);
+            }
+            else {
+                dealButton.setFillColor(sf::Color::White);
+            }
+        }
+        // When round is in progress and it's the human's turn, highlight human action buttons.
+        if (roundInProgress && currentPlayerTurn == humanIndex) {
+            if (hitButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
+                hitButton.setFillColor(sf::Color::Yellow);
+            }
+            else {
+                hitButton.setFillColor(sf::Color::White);
+            }
+            if (standButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
+                standButton.setFillColor(sf::Color::Yellow);
+            }
+            else {
+                standButton.setFillColor(sf::Color::White);
+            }
+            if (doubleButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
+                doubleButton.setFillColor(sf::Color::Yellow);
+            }
+            else {
+                doubleButton.setFillColor(sf::Color::White);
+            }
+            if (splitButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
+                splitButton.setFillColor(sf::Color::Yellow);
+            }
+            else {
+                splitButton.setFillColor(sf::Color::White);
+            }
+        }
     }
 
     if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
         if (isTextClicked(quitButton, window)) {
             selectedIndex = 1;  // Set selected index to 1 for Quit.
-            // Optionally, add additional logic for quitting if needed.
+            // Additional quitting logic if necessary.
         }
-        
+
         if (!roundInProgress) {
             if (isTextClicked(dealButton, window))
                 startNewRound();
         }
         else {
-            // Only process human actions if it's the human's turn.
+            // Process human actions only if it's the human's turn.
             if (currentPlayerTurn == humanIndex) {
                 if (isTextClicked(hitButton, window)) {
                     players[humanIndex].hit(deck, counter);
@@ -447,17 +483,17 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
 }
 
 void Game::draw(sf::RenderWindow& window) {
-    // First, draw all players' card sprites.
+    // Draw all players' card sprites.
     for (const auto& vec : playersCardSprites) {
         for (const auto& sprite : vec)
             window.draw(sprite);
     }
-    // Then, draw dealer's card sprites.
+    // Draw dealer's card sprites.
     for (const auto& sprite : dealerCardSprites)
         window.draw(sprite);
-    // Then, draw the message text.
+    // Draw the message text.
     window.draw(messageText);
-    // Finally, draw the human action buttons (or the Deal button) on top.
+    // Draw human action buttons (or the Deal button) on top.
     window.draw(quitButton);
     if (!roundInProgress)
         window.draw(dealButton);

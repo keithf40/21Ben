@@ -397,14 +397,14 @@ void PlayMenu::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
         if (isChecked) {
             if (dropdownBox.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
                 dropdownOpen = !dropdownOpen;
-                // Adjust the deck slider position based on the dropdown state.
+                // Adjust deck slider position based on dropdown state.
                 if (dropdownOpen) {
                     // Move deck slider down so the dropdown options don't overlap.
                     float newDeckY = dropdownBox.getPosition().y + dropdownBox.getSize().y * (dropdownOptions.size() + 1) + 50.f;
                     deckSliderTrack.setPosition(sf::Vector2f(deckSliderTrack.getPosition().x, newDeckY));
                 }
                 else {
-                    // Return deck slider to its default position.
+                    // Return deck slider to its default position when the dropdown is unclicked.
                     float defaultDeckY = dropdownBox.getPosition().y + dropdownBox.getSize().y + 50.f;
                     deckSliderTrack.setPosition(sf::Vector2f(deckSliderTrack.getPosition().x, defaultDeckY));
                 }
@@ -440,9 +440,6 @@ void PlayMenu::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
                             deckSliderKnob.setPosition(sf::Vector2f(knobX - deckSliderKnob.getSize().x / 2,
                                 deckSliderTrack.getPosition().y - (deckSliderKnob.getSize().y - deckSliderTrack.getSize().y) / 2));
                         }
-                        // Also update the Player Position slider based on the deck slider's new position.
-                        slider3Track.setPosition(sf::Vector2f(slider2Track.getPosition().x, deckSliderTrack.getPosition().y + deckSliderTrack.getSize().y + 60.f));
-                        slider3Label.setPosition(sf::Vector2f(slider3Track.getPosition().x, slider3Track.getPosition().y - 40.f));
                         {
                             float ratio3 = float(gameSettings[4] - 1) / float(5 - 1);
                             float knob3X = slider3Track.getPosition().x + ratio3 * slider3Track.getSize().x;
