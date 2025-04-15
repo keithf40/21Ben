@@ -4,6 +4,7 @@
 #include "PlayMenu.h"
 #include "Game.h"
 #include "Texture.h"
+#include "Simulation.h"  // Include the Simulation header
 #include <memory> // For std::unique_ptr
 
 // Enum to manage different game states
@@ -52,10 +53,9 @@ int main() {
     // Define default game settings and strategy
     std::vector<int> defaultGameSettings = { 0, 15, 100, 1, 1 };
     std::string defaultStrategy = "Standard";
-    // Instead of centering the text, set its origin to the bottom left of the text.
+    // Instead of centering, set the origin to the bottom left and place with a small margin.
     sf::FloatRect textRect = defaultSettingsText.getLocalBounds();
     defaultSettingsText.setOrigin(0.f, textRect.height);
-    // Position the text with a small margin from the bottom left (e.g., 10 pixels from each side)
     defaultSettingsText.setPosition(10.f, window.getSize().y - 10.f);
 
     // Main game loop
@@ -105,7 +105,26 @@ int main() {
                             currState = GameState::MAIN_MENU;
                         }
                         else if (selected == SimulateMenu::Option::START) {
-                            // To implement simulation start
+                            // Retrieve simulation settings from simulateMenu.
+                            std::vector<int> simSettings = simulateMenu.getGameSettings();
+                            std::string playStyleOne = simulateMenu.getSelectedStrategy();
+                            std::string playStyleTwo = simulateMenu.getSelectedStrategy2();
+
+                            // Create and run the Simulation.
+                            // simSettings[3]: deck size (amount of decks)
+                            // simSettings[1]: minimum bet
+                            // simSettings[2]: starting money
+                            // simSettings[4]: player position
+                            if (simSettings[0] == 1) {  // Checkbox enabled: competing counts.
+                                Simulation simulation(simSettings[3], simSettings[1], simSettings[2], simSettings[4], playStyleOne, playStyleTwo);
+                                simulation.Run(1000, 100);  // Run simulation: adjust handsDealt and rounds as needed.
+                            }
+                            else {
+                                Simulation simulation(simSettings[3], simSettings[1], simSettings[2], simSettings[4], playStyleOne);
+                                simulation.Run(1000, 100);
+                            }
+                            // After simulation, return to main menu.
+                            currState = GameState::MAIN_MENU;
                         }
                     }
                 }
@@ -121,7 +140,7 @@ int main() {
                             currState = GameState::MAIN_MENU;
                         }
                         else if (selected == PlayMenu::Option::START) {
-                            // Optionally allow starting the game from the settings screen
+                            // Optionally allow starting the game from the settings screen.
                             gameScreen = std::make_unique<Game>(1200, 800, playMenu.getSelectedStrategy(), playMenu.getGameSettings());
                             currState = GameState::GAME;
                         }
@@ -152,7 +171,7 @@ int main() {
         case GameState::MAIN_MENU:
             window.draw(menuBackground);
             mainMenu.draw(window);
-            // Optionally draw default settings text if desired
+            // Uncomment the following line if you wish to draw the default settings text in MAIN_MENU.
             // window.draw(defaultSettingsText);
             break;
 
