@@ -39,6 +39,25 @@ int main() {
     // Show the mouse cursor
     window.setMouseCursorVisible(true);
 
+    // --- Create and configure the default settings text ---
+    sf::Font font;
+    if (!font.loadFromFile("assets/ttfFont.ttf")) {
+        std::cerr << "Font not found!" << std::endl;
+    }
+    sf::Text defaultSettingsText;
+    defaultSettingsText.setFont(font);
+    defaultSettingsText.setString("Default Game Settings:\nDeck Count: Single Deck\nMin. Bet: $15\nStarting Money: $100\nPlayer Position: 1");
+    defaultSettingsText.setCharacterSize(30);
+    defaultSettingsText.setFillColor(sf::Color::White);
+    // Define default game settings and strategy
+    std::vector<int> defaultGameSettings = { 0, 15, 100, 1, 1 };
+    std::string defaultStrategy = "Standard";
+    // Instead of centering the text, set its origin to the bottom left of the text.
+    sf::FloatRect textRect = defaultSettingsText.getLocalBounds();
+    defaultSettingsText.setOrigin(0.f, textRect.height);
+    // Position the text with a small margin from the bottom left (e.g., 10 pixels from each side)
+    defaultSettingsText.setPosition(10.f, window.getSize().y - 10.f);
+
     // Main game loop
     while (window.isOpen()) {
         sf::Event event;
@@ -58,6 +77,12 @@ int main() {
                     MainMenu::Option selected = mainMenu.getSelectedOption();
                     if (mainMenu.getSelectedOptionPos().contains(static_cast<sf::Vector2f>(mousePos))) {
                         if (selected == MainMenu::Option::PLAY) {
+                            // Create a game using the default settings and immediately switch to GAME state.
+                            gameScreen = std::make_unique<Game>(1200, 800, defaultStrategy, defaultGameSettings);
+                            currState = GameState::GAME;
+                        }
+                        else if (selected == MainMenu::Option::GAME_SETTINGS) {
+                            // Go to the game settings (Play Menu) state when "Game Settings" is clicked.
                             currState = GameState::PLAY;
                         }
                         else if (selected == MainMenu::Option::SIMULATE) {
@@ -75,12 +100,12 @@ int main() {
                 if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                     SimulateMenu::Option selected = simulateMenu.getSelectedOption();
-                    if (playMenu.getSelectedOptionPos().contains(static_cast<sf::Vector2f>(mousePos))) {
+                    if (simulateMenu.getSelectedOptionPos().contains(static_cast<sf::Vector2f>(mousePos))) {
                         if (selected == SimulateMenu::Option::BACK) {
                             currState = GameState::MAIN_MENU;
                         }
                         else if (selected == SimulateMenu::Option::START) {
-                            // To implement
+                            // To implement simulation start
                         }
                     }
                 }
@@ -96,9 +121,9 @@ int main() {
                             currState = GameState::MAIN_MENU;
                         }
                         else if (selected == PlayMenu::Option::START) {
-                            // Switch to game state and create the game screen at this point
-                            currState = GameState::GAME;
+                            // Optionally allow starting the game from the settings screen
                             gameScreen = std::make_unique<Game>(1200, 800, playMenu.getSelectedStrategy(), playMenu.getGameSettings());
+                            currState = GameState::GAME;
                         }
                     }
                 }
@@ -127,6 +152,8 @@ int main() {
         case GameState::MAIN_MENU:
             window.draw(menuBackground);
             mainMenu.draw(window);
+            // Optionally draw default settings text if desired
+            // window.draw(defaultSettingsText);
             break;
 
         case GameState::SIMULATE:

@@ -8,8 +8,8 @@
 // Class representing the main menu screen
 class MainMenu {
 public:
-    // Enum for menu options
-    enum class Option { PLAY, SIMULATE, EXIT, NONE };
+    // Enum for menu options: now includes GAME_SETTINGS
+    enum class Option { PLAY, GAME_SETTINGS, SIMULATE, EXIT, NONE };
 
     // Constructor and destructor
     MainMenu(float width, float height);

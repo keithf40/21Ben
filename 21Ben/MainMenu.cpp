@@ -8,8 +8,9 @@ MainMenu::MainMenu(float width, float height) : selectedIndex(0) {
         std::cerr << "Font not found!" << std::endl;
     }
 
-    // Menu option labels and positions
-    const std::vector<std::string> labels = { "Play", "Simulate", "Exit" };
+    // Menu option labels and positions.
+    // Updated labels vector to include "Game Settings" between Play and Simulate.
+    const std::vector<std::string> labels = { "Play", "Game Settings", "Simulate", "Exit" };
     const float startY = 200.f;
     const float spacing = 100.f;
 
@@ -18,7 +19,8 @@ MainMenu::MainMenu(float width, float height) : selectedIndex(0) {
         option.setFont(font);
         option.setString(labels[i]);
         option.setCharacterSize(70);
-        option.setFillColor(i == 0 ? sf::Color::Yellow : sf::Color::White); // Highlight first by default
+        // Highlight the first option (Play) by default.
+        option.setFillColor(i == 0 ? sf::Color::Yellow : sf::Color::White);
         option.setPosition(sf::Vector2f(100.f, startY + i * spacing));
         options.push_back(option);
     }
@@ -26,7 +28,7 @@ MainMenu::MainMenu(float width, float height) : selectedIndex(0) {
 
 // Destructor
 MainMenu::~MainMenu() {
-    // No dynamic memory to clean up
+    // Nothing to clean up as all data is managed by STL containers.
 }
 
 // Draws the menu options to the window
@@ -36,36 +38,38 @@ void MainMenu::draw(sf::RenderWindow& window) {
     }
 }
 
-// Handles mouse hover to update highlighted option
+// Handles mouse hover events to update the highlighted (selected) option
 void MainMenu::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
     if (event.type == sf::Event::MouseMoved) {
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
         for (std::size_t i = 0; i < options.size(); ++i) {
             if (options[i].getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
                 if (i != selectedIndex) {
-                    options[selectedIndex].setFillColor(sf::Color::White); // Reset old
+                    // Reset the previously selected option and highlight the new one
+                    options[selectedIndex].setFillColor(sf::Color::White);
                     selectedIndex = i;
-                    options[selectedIndex].setFillColor(sf::Color::Yellow); // Highlight new
+                    options[selectedIndex].setFillColor(sf::Color::Yellow);
                 }
             }
             else if (i != selectedIndex) {
-                options[i].setFillColor(sf::Color::White); // Reset others
+                options[i].setFillColor(sf::Color::White);
             }
         }
     }
 }
 
-// Returns which menu option is currently selected
+// Returns which menu option is currently selected based on selectedIndex
 MainMenu::Option MainMenu::getSelectedOption() const {
     switch (selectedIndex) {
     case 0: return Option::PLAY;
-    case 1: return Option::SIMULATE;
-    case 2: return Option::EXIT;
+    case 1: return Option::GAME_SETTINGS;
+    case 2: return Option::SIMULATE;
+    case 3: return Option::EXIT;
     default: return Option::NONE;
     }
 }
 
-// Returns the global bounds (position + size) of the selected option
+// Returns the global bounds (position and size) of the selected option for click detection
 sf::FloatRect MainMenu::getSelectedOptionPos() const {
     return options[selectedIndex].getGlobalBounds();
 }

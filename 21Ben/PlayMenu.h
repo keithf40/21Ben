@@ -17,13 +17,15 @@ public:
 
 private:
     std::vector<sf::Text> options;
-    // gameSettings[0]: checkbox state, gameSettings[1]: minimum bet (15-200),
-    // gameSettings[2]: starting money (100-5000), gameSettings[3]: amount of decks, gameSettings[4]: player position (1-5)
+    // gameSettings[0]: checkbox state, gameSettings[1]: minimum bet (15–200),
+    // gameSettings[2]: starting money (100–5000), gameSettings[3]: number of decks (1–8),
+    // gameSettings[4]: player position (1–5)
     std::vector<int> gameSettings = { 0, 15, 100, 1, 1 };
     std::vector<std::string> strategies = { "Standard", "HiLo", "HiOpt1", "HiOpt2", "Mentor", "Omega2",
                                               "Revere Point Count", "Revere 14 Count", "Revere RAPC",
                                               "Wong Halves", "Zen Count", "KO" };
-    std::vector<std::string> amountOfDecks = { "Single Deck", "Multi-Deck (6)", "Multi-Deck (8)" };
+    // Removed amountOfDecks vector
+
     std::string selectedStrategy = "Standard";
     sf::Font font;
     std::size_t selectedIndex;
@@ -55,14 +57,13 @@ private:
     std::vector<sf::Text> dropdownOptions;
     std::size_t dropdownSelectedIndex;
 
-    // Dropdown menu for amount of decks (always enabled)
-    sf::RectangleShape deckDropdownBox;
-    sf::Text deckDropdownText;
-    bool deckDropdownOpen;
-    std::vector<sf::Text> deckDropdownOptions;
-    std::size_t deckDropdownSelectedIndex;
+    // New slider for amount of decks (range 1–8)
+    sf::RectangleShape deckSliderTrack;
+    sf::RectangleShape deckSliderKnob;
+    sf::Text deckSliderLabel;
+    bool isDraggingDeckSlider;
 
-    // New slider for Player Position (range 1-5)
+    // Slider for Player Position (range 1–5)
     sf::RectangleShape slider3Track;
     sf::RectangleShape slider3Knob;
     sf::Text slider3Label;
