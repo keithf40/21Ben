@@ -4,6 +4,8 @@
 Player::Player(const std::string& playerName, int startingBalance)
     : name(playerName), balance(startingBalance), currentBet(0), currentHandIndex(0)
 {
+    Hand foo;
+    hands.push_back(foo);
 }
 
 void Player::reset() {
@@ -19,7 +21,7 @@ void Player::placeBet(long long amount) {
         std::cerr << "Not enough balance to place this bet\n";
         return;
     }
-    hands[currentHandIndex].addBet(amount);
+    hands[currentHandIndex].addBet(amount) ;
     balance -= amount;
 }
 
