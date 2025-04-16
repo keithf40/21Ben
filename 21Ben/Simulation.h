@@ -24,7 +24,7 @@ private:
     std::unique_ptr<Deck> deck;
     std::unique_ptr<Counter> counterOne;
     std::unique_ptr<Counter> counterTwo;
-    std::vector<float> betRatios;
+    std::vector<float> betRatios{ std::vector<float>(5) };
     std::vector<long long> balances;
     std::vector<Player> players;  //All bots
     OptimalPlay optimal;

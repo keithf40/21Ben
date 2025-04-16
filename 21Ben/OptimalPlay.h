@@ -12,6 +12,8 @@ private:
     // Hard total strategy table: [player total - 4 to 17] x [dealer card 2–Ace (index 0–9)]
     // 2 and 3 were added incase a user splits on a 2 or 3
     std::vector<std::vector<char>> HardTotal = {
+        {'H','H','H','H','H','H','H','H','H','H'}, // 0
+        {'H','H','H','H','H','H','H','H','H','H'}, // 1
         {'H','H','H','H','H','H','H','H','H','H'}, // 2
         {'H','H','H','H','H','H','H','H','H','H'}, // 3
         {'H','H','H','H','H','H','H','H','H','H'}, // 4

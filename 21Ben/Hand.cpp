@@ -88,7 +88,7 @@ void Hand::removeLastCard() {
 }
 
 bool Hand::isBusted() const {
-    return busted;
+    return totalCount > 21;
 }
 
 void Hand::addBet(int bet) {

@@ -76,7 +76,7 @@ void Counter::setStrategy(std::string newStrategy) {
 
 // Calculates bet size based on count, decks remaining, bankroll, and stealth mode
 int Counter::getBet(int decksRemaining, int bankroll, int minbet, bool sleuthMode) {
-    int trueCount = count / decksRemaining;
+    float trueCount = float(count) / float(decksRemaining);
     int bettingUnit = bankroll / 1000;
     int totalBetSize = bettingUnit * (trueCount - 1);
 
@@ -84,7 +84,7 @@ int Counter::getBet(int decksRemaining, int bankroll, int minbet, bool sleuthMod
     if (totalBetSize < minbet) totalBetSize = minbet;
 
     // Cap bets if sleuth mode is on (avoid detection)
-    if (totalBetSize > bankroll / 4 && sleuthMode) {
+    if ((totalBetSize > bankroll / 4) && sleuthMode) {
         totalBetSize = bankroll / 4;
     }
 

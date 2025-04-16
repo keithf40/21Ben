@@ -23,91 +23,147 @@ Simulation::Simulation(int deckSize, int minBet, int startingMoney, int playerPo
 }
 
 void Simulation::Run(int handsDealt, int rounds) {
-	Dealer dealer;
-	std::vector<std::vector<long long>> counter1Results;
-	std::vector<std::vector<long long>> counter2Results;
 	for (int i = 0; i < 5; i++) {
 		std::string name = "Position" + std::to_string(i + 1);
 		Player foo(name, startingMoney);
 		players.push_back(foo);
 	}
-	
-	for (int i = 0; i < rounds; i++) {
-		deck->shuffle();
-		counterOne->resetCount();
-		for (int j = 0; j < players.size(); j++) {
-			players[j].setBank(startingMoney);
-			players[j].reset();
-		}
-		
-		for (int j = 0; j < handsDealt; j++) {
-			initializeRound();
-			for (auto p : players) {
-				playerTurn(p);
-			}
 
-			dealer.dealerTurn(*deck, *counterOne);
-			auto dealerCards = dealer.getHand().getCards();
-			
-			for (int i = 2; i < dealerCards.size(); i++) {
-				counterTwo->modifyCount(dealerCards[i]);
-			}
-
-			std::vector<long long> counter1;
-			std::vector<long long> counter2;
-			
-			int dealerScore = dealer.getHand().getTotalValue();
-			bool dealerBlackjack = dealer.checkBlackjack();
-			int k = 0;
-			
-			for (auto p : players) {
-				long long netGain = p.totalWinnings(dealerScore, dealerBlackjack);
-				p.addWinnings(netGain);
-				balances[k] += netGain * betRatios[k];
-				counter1.push_back(netGain);
-				counter2.push_back(balances[k]);
-				k++;
-			}
-			counter1Results.push_back(counter1);
-			counter2Results.push_back(counter2);
-
-		}
-	}
 	std::ofstream outfile("simulation.txt");
-
 	if (outfile.is_open()) {
 		outfile << counterOne->getStrategy();
 		if (competingCounts) {
 			outfile << " " << counterTwo->getStrategy();
 		}
 		outfile << "\n";
-		for (int i = 0; i < counter1Results.size(); i++) {
-			outfile << counter1Results[i][0];
-			for (int j = 0; j < counter1Results[i].size(); j++) {
-				outfile << ", " << counter1Results[i][j];
+		
+	}
+	outfile.close();
+	for (int i = 0; i < rounds; i++) {
+		deck->shuffle();
+		counterOne->resetCount();
+		balances.clear();
+		for (int j = 0; j < players.size(); j++) {
+			players[j].setBank(startingMoney);
+			players[j].reset();
+			balances.push_back(startingMoney);
+		}
 
+		for (int j = 0; j < handsDealt; j++) {
+			std::vector<long long> balanceDiff;
+			for (auto p : players) {
+				balanceDiff.push_back(p.getBalance());
 			}
-			outfile << "\n";
-			if (competingCounts) {
-				outfile << counter2Results[i][0];
-				for (int j = 0; j < counter2Results[i].size(); j++) {
-					outfile << ", " << counter2Results[i][j];
+
+			dealer.clear();
+			if (deck->shuffleReady()) {
+				deck->shuffle();
+				counterOne->resetCount();
+				counterTwo->resetCount();
+			}
+			int counterOneCount = counterOne->getCount() / deck->getDecksRemaining();
+			int counterTwoCount = counterTwo->getCount() / deck->getDecksRemaining();
+
+			initializeRound();
+			for (int j = 0; j < players.size(); j++) {
+				for (int i = 0; i < players[j].getTotalHands(); i) {
+					Card dealerUp = dealer.getHand().getCards()[1];
+					char move = optimal.getMove(players[j].getCurrentHand(), dealerUp);
+					if (move == 'H') {
+						Card count = players[j].hit(*deck, *counterOne);
+						counterTwo->modifyCount(count);
+					}
+					else if (move == 'S') {
+						i++;
+						players[j].advanceHand();
+					}
+					else if (move == 'D') {
+						Card count = players[j].hit(*deck, *counterOne);
+						counterTwo->modifyCount(count);
+						if (players[j].doubleDown()) {
+							i++;
+							players[j].advanceHand();
+						}
+					}
+					else if (move == 'Y') {
+						players[j].split();
+					}
+					else if (move == 'B') {
+						i++;
+						players[j].advanceHand();
+					}
+				}
+			}
+
+			dealer.dealerTurn(*deck, *counterOne);
+			auto dealerCards = dealer.getHand().getCards();
+
+			for (int i = 2; i < dealerCards.size(); i++) {
+				counterTwo->modifyCount(dealerCards[i]);
+			}
+
+			int dealerScore = dealer.getHand().getTotalValue();
+			bool dealerBlackjack = dealer.checkBlackjack();
+			int k = 1;
+
+			std::ofstream outfile("simulation.txt", std::ios::app);
+			
+			long long netGain = players[0].totalWinnings(dealerScore, dealerBlackjack);
+			players[0].addWinnings(netGain);
+			balanceDiff[0] = players[0].getBalance() - balanceDiff[0];
+			balances[0] += balanceDiff[0] * betRatios[0];
+			if (outfile.is_open()) {
+				outfile << std::to_string(players[0].getBalance());
+				
+				for (int i = 1; i < players.size(); i++) {
+					netGain = players[i].totalWinnings(dealerScore, dealerBlackjack);
+					players[i].addWinnings(netGain);
+					balanceDiff[i] = players[i].getBalance() - balanceDiff[i];
+					balances[i] += betRatios[i] * balanceDiff[i];
+					outfile << ",";
+					outfile << players[i].getBalance();
+					k++;
+				}
+				outfile << " Count was ";
+				outfile << counterOneCount;
+				outfile << " Dealer was ";
+				outfile << dealerScore;
+				outfile << " Dealer showed ";
+				outfile << dealer.getHand().getCards()[1].getValue();
+				for (auto p : players) {
+					for (auto H : p.getHands()) {
+						outfile << " ";
+						outfile << H.getTotalValue();
+					}
 				}
 				outfile << "\n";
+				outfile << std::to_string(balances[0]);
+				for (int i = 1; i < balances.size(); i++) {
+					outfile << ",";
+					outfile << std::to_string(balances[i]);
+				}
+				outfile << " Count was ";
+				outfile << counterTwoCount;
+				outfile << "\n";
+				outfile.close();
 			}
+			balanceDiff.clear();
 		}
+		std::ofstream outfile("simulation.txt", std::ios::app);
+		outfile << "End of simulation ";
+		outfile << i + 1;
+		outfile << "\n";
 		outfile.close();
+		
 	}
+	
+
+	
 }
 //we dont need to do this but I felt like putting them in separate functiong might make the code
 //more readable, just theory crafting readable code thats all
 void Simulation::initializeRound() {
-	dealer.clear();
-	if (deck->shuffleReady()) {
-		deck->shuffle();
-		counterOne->resetCount();
-		counterTwo->resetCount();
-	}
+	
 	for (int i = 0; i < players.size(); i++) {
 		players[i].reset();
 		players[i].placeBet(counterOne->getBet(deck->getDecksRemaining(),
@@ -132,27 +188,5 @@ void Simulation::initializeRound() {
 }
 
 void Simulation::playerTurn(Player& player) {
-	for (int i = 0; i < player.getTotalHands(); i) {
-		Card dealerUp = dealer.getHand().getCards()[1];
-		char move = optimal.getMove(player.getCurrentHand(), dealerUp);
-		if (move == 'H') {
-			Card count = player.hit(*deck, *counterOne);
-			counterTwo->modifyCount(count);
-		}
-		else if (move == 'S') {
-			i++;
-			player.advanceHand();
-		}
-		else if (move == 'D') {
-			Card count = player.hit(*deck, *counterOne);
-			counterTwo->modifyCount(count);
-			if (player.doubleDown()) {
-				i++;
-				player.advanceHand();
-			}
-		}
-		else if (move == 'Y') {
-			player.split();
-		}
-	}
+	
 }
