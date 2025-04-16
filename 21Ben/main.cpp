@@ -116,11 +116,11 @@ int main() {
                             // simSettings[2]: starting money
                             // simSettings[4]: player position
                             if (simSettings[0] == 1) {  // Checkbox enabled: competing counts.
-                                Simulation simulation(simSettings[3], 3, 10000, simSettings[4], playStyleOne, playStyleTwo);
+                                Simulation simulation(simSettings[3], simSettings[1], simSettings[2], simSettings[4], playStyleOne, playStyleTwo);
                                 simulation.Run(1000, 100);  // Run simulation: adjust handsDealt and rounds as needed.
                             }
                             else {
-                                Simulation simulation(simSettings[3], 3, 10000, simSettings[4], playStyleOne);
+                                Simulation simulation(simSettings[3], simSettings[1], simSettings[2], simSettings[4], playStyleOne);
                                 simulation.Run(1000, 100);
                             }
                             // After simulation, return to main menu.
