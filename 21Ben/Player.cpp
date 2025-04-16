@@ -132,12 +132,18 @@ bool Player::doubleDown() {
 long long Player::totalWinnings(int dealerTotal, bool dealerBlackjack) {
     long long totalWinning = 0;
     for (auto H : hands) {
-        if ((dealerBlackjack and H.isBlackjack()) or (dealerTotal == H.getTotalValue())) {
-            totalWinning += H.getBet();
+        if (H.isBusted()) continue;
+        else if (dealerTotal > 21) {
+            if (H.isBlackjack()) totalWinning += H.getBet() * 2.5;
+            else totalWinning += H.getBet() * 2;
         }
-        else if (not dealerBlackjack and H.isBlackjack()) totalWinning += H.getBet() * 2.5;
+        else if (dealerBlackjack) {
+            if (H.isBlackjack()) totalWinning += H.getBet();
+        }
+        else if (H.isBlackjack()) totalWinning += H.getBet() * 2.5;
         else {
             if (dealerTotal < H.getTotalValue()) totalWinning += H.getBet() * 2;
+            else if (dealerTotal == H.getTotalValue()) totalWinning += H.getBet();
         }
     }
     return totalWinning;
