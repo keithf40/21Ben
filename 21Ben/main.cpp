@@ -172,7 +172,7 @@ int main() {
             window.draw(menuBackground);
             mainMenu.draw(window);
             // Uncomment the following line if you wish to draw the default settings text in MAIN_MENU.
-            // window.draw(defaultSettingsText);
+            window.draw(defaultSettingsText);
             break;
 
         case GameState::SIMULATE:
