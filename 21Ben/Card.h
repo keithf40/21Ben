@@ -2,7 +2,6 @@
 #include <string>
 
 
-//testing if i can change 
 // Card rank enumeration, with explicit integer values
 enum class Rank {
     Two = 2,
