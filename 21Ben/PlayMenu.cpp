@@ -110,7 +110,7 @@ PlayMenu::PlayMenu(float width, float height)
     sliderKnob.setSize(sf::Vector2f(15.f, 25.f));
     sliderKnob.setFillColor(sf::Color::Yellow);
     {
-        float ratio = float(gameSettings[1] - 15) / float(200 - 15);
+        float ratio = float(gameSettings[1] - 5) / float(200 - 5);
         float knobX = sliderTrack.getPosition().x + ratio * sliderTrack.getSize().x;
         sliderKnob.setPosition(knobX - sliderKnob.getSize().x / 2,
             sliderTrack.getPosition().y - (sliderKnob.getSize().y - sliderTrack.getSize().y) / 2);
@@ -130,14 +130,14 @@ PlayMenu::PlayMenu(float width, float height)
     slider2Knob.setSize(sf::Vector2f(15.f, 25.f));
     slider2Knob.setFillColor(sf::Color::Yellow);
     {
-        float ratio2 = float(gameSettings[2] - 100) / float(5000 - 100);
+        float ratio2 = float(gameSettings[2] - 100) / float(10000 - 100);
         float knob2X = slider2Track.getPosition().x + ratio2 * slider2Track.getSize().x;
         slider2Knob.setPosition(knob2X - slider2Knob.getSize().x / 2,
             slider2Track.getPosition().y - (slider2Knob.getSize().y - slider2Track.getSize().y) / 2);
     }
 
     slider2Label.setFont(font);
-    slider2Label.setString("Starting Money: " + std::to_string(gameSettings[2]));
+    slider2Label.setString("Buy-In: " + std::to_string(gameSettings[2]));
     slider2Label.setCharacterSize(25);
     slider2Label.setFillColor(sf::Color::White);
     slider2Label.setPosition(slider2Track.getPosition().x, slider2Track.getPosition().y - 40.f);
@@ -229,8 +229,9 @@ void PlayMenu::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
             if (newX > rightBound) newX = rightBound;
             sliderKnob.setPosition(newX - sliderKnob.getSize().x / 2, sliderKnob.getPosition().y);
             float ratio = (newX - leftBound) / sliderTrack.getSize().x;
-            double raw = 15 + ratio * (200 - 15);
-            int quantized = 15 + static_cast<int>(std::round((raw - 15) / 5.0)) * 5;
+            double raw = 5 + ratio * (200 - 5);
+            int quantized = 5 + static_cast<int>(std::round((raw - 5) / 5.0)) * 5;
+            if (quantized < 5) quantized = 5;
             if (quantized > 200) quantized = 200;
             gameSettings[1] = quantized;
             sliderLabel.setString("Min Bet: " + std::to_string(gameSettings[1]));
@@ -245,11 +246,11 @@ void PlayMenu::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
             if (newX > rightBound) newX = rightBound;
             slider2Knob.setPosition(newX - slider2Knob.getSize().x / 2, slider2Knob.getPosition().y);
             float ratio2 = (newX - leftBound) / slider2Track.getSize().x;
-            double raw2 = 100 + ratio2 * (5000 - 100);
+            double raw2 = 100 + ratio2 * (10000 - 100);
             int quantized2 = 100 + static_cast<int>(std::round((raw2 - 100) / 50.0)) * 50;
-            if (quantized2 > 5000) quantized2 = 5000;
+            if (quantized2 > 10000) quantized2 = 10000;
             gameSettings[2] = quantized2;
-            slider2Label.setString("Starting Money: " + std::to_string(gameSettings[2]));
+            slider2Label.setString("Buy-In: " + std::to_string(gameSettings[2]));
         }
 
         // Update deck slider if dragged
@@ -352,7 +353,7 @@ void PlayMenu::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
             int quantized2 = 100 + static_cast<int>(std::round((raw2 - 100) / 50.0)) * 50;
             if (quantized2 > 5000) quantized2 = 5000;
             gameSettings[2] = quantized2;
-            slider2Label.setString("Starting Money: " + std::to_string(gameSettings[2]));
+            slider2Label.setString("Buy-In: " + std::to_string(gameSettings[2]));
         }
 
         // Deck slider interactions for amount of decks

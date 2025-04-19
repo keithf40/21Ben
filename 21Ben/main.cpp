@@ -47,7 +47,7 @@ int main() {
     }
     sf::Text defaultSettingsText;
     defaultSettingsText.setFont(font);
-    defaultSettingsText.setString("Default Game Settings:\nDeck Count: Single Deck\nMin. Bet: $15\nStarting Money: $100\nPlayer Position: 1");
+    defaultSettingsText.setString("Default Settings:\nSingle Deck\nMin. Bet: $15\nBuy-In: $100\nPlayer Position: 1");
     defaultSettingsText.setCharacterSize(30);
     defaultSettingsText.setFillColor(sf::Color::White);
     // Define default game settings and strategy
