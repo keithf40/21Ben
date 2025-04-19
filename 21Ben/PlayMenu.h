@@ -21,12 +21,12 @@ private:
     // gameSettings[2]: starting money (100–5000), gameSettings[3]: number of decks (1–8),
     // gameSettings[4]: player position (1–5)
     std::vector<int> gameSettings = { 0, 15, 100, 1, 1 };
-    std::vector<std::string> strategies = { "Standard", "HiLo", "HiOpt1", "HiOpt2", "Mentor", "Omega2",
+    std::vector<std::string> strategies = { "None", "HiLo", "HiOpt1", "HiOpt2", "Mentor", "Omega2",
                                               "Revere Point Count", "Revere 14 Count", "Revere RAPC",
                                               "Wong Halves", "Zen Count", "KO" };
     // Removed amountOfDecks vector
 
-    std::string selectedStrategy = "Standard";
+    std::string selectedStrategy = "None";
     sf::Font font;
     std::size_t selectedIndex;
 

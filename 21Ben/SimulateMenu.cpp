@@ -17,7 +17,7 @@ SimulateMenu::SimulateMenu(float width, float height)
 
     // Title
     titleText.setFont(font);
-    titleText.setString("Game Settings");
+    titleText.setString("Simulation Settings");
     titleText.setCharacterSize(50);
     titleText.setFillColor(sf::Color::White);
     titleText.setPosition(sf::Vector2f(width / 2.50f, height / 3.25f));

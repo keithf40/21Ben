@@ -21,16 +21,16 @@ private:
     // gameSettings[0]: checkbox state, gameSettings[1]: minimum bet (15-200),
     // gameSettings[2]: starting money (100-5000), gameSettings[3]: deck count (1-8), gameSettings[4]: player position (1-5)
     std::vector<int> gameSettings = { 0, 15, 100, 1, 1 };
-    std::vector<std::string> strategies = { "Standard", "HiLo", "HiOpt1", "HiOpt2", "Mentor", "Omega2",
+    std::vector<std::string> strategies = { "None", "HiLo", "HiOpt1", "HiOpt2", "Mentor", "Omega2",
                                               "Revere Point Count", "Revere 14 Count", "Revere RAPC",
                                               "Wong Halves", "Zen Count", "KO" };
     // Removed amountOfDecks and deck dropdown members
     // std::vector<std::string> amountOfDecks = { "Single Deck", "Multi-Deck (6)", "Multi-Deck (8)" };
 
     // New dropdown for "Select Playstyle" (always enabled) updates selectedStrategy
-    std::string selectedStrategy = "Standard";
+    std::string selectedStrategy = "None";
     // Existing dropdown for compare playstyle (affected by assistance) updates selectedStrategy2
-    std::string selectedStrategy2 = "Standard";
+    std::string selectedStrategy2 = "None";
     sf::Font font;
     std::size_t selectedIndex;
 
