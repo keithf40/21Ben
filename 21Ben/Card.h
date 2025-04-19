@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 
+
+//testing if i can change 
 // Card rank enumeration, with explicit integer values
 enum class Rank {
     Two = 2,
@@ -29,7 +31,7 @@ enum class Suit {
 // Class representing a playing card
 class Card {
 private:
-    Rank rank;   // Card rank (2–Ace)
+    Rank rank;   // Card rank (2â€“Ace)
     Suit suit;   // Card suit (Clubs, Diamonds, etc.)
 
 public:
