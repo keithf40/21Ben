@@ -53,5 +53,5 @@ public:
 
     void setBank(long long bank);
 
-    bool doubleDown(Deck& deck)
+    bool doubleDown(Deck& deck);
 };

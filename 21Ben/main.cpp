@@ -5,10 +5,11 @@
 #include "Game.h"
 #include "Texture.h"
 #include "Simulation.h"  // Include the Simulation header
+#include "StatisticsMenu.h"  // Add StatisticsMenu header
 #include <memory> // For std::unique_ptr
 
 // Enum to manage different game states
-enum class GameState { MAIN_MENU, PLAY, SIMULATE, GAME };
+enum class GameState { MAIN_MENU, PLAY, SIMULATE, GAME, STATISTICS };  // Add STATISTICS state
 
 int main() {
     // Create main game window
@@ -30,6 +31,7 @@ int main() {
     MainMenu mainMenu(1200, 800);
     SimulateMenu simulateMenu(1200, 800);
     PlayMenu playMenu(1200, 800);
+    StatisticsMenu statisticsMenu(1200, 800);  // Add StatisticsMenu instance
 
     // Use a smart pointer for the game screen and delay its creation
     std::unique_ptr<Game> gameScreen = nullptr;
@@ -84,6 +86,10 @@ int main() {
                         else if (selected == MainMenu::Option::GAME_SETTINGS) {
                             // Go to the game settings (Play Menu) state when "Game Settings" is clicked.
                             currState = GameState::PLAY;
+                        }
+                        else if (selected == MainMenu::Option::STATISTICS) {  // Add Statistics handling
+                            statisticsMenu.updateStats();  // Refresh stats before showing
+                            currState = GameState::STATISTICS;
                         }
                         else if (selected == MainMenu::Option::SIMULATE) {
                             currState = GameState::SIMULATE;
@@ -162,6 +168,15 @@ int main() {
                     }
                 }
                 break;
+
+            case GameState::STATISTICS:  // Add Statistics state handling
+                statisticsMenu.handleEvent(event, window);
+                if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+                    if (statisticsMenu.getSelectedOption() == StatisticsMenu::Option::BACK) {
+                        currState = GameState::MAIN_MENU;
+                    }
+                }
+                break;
             }
         }
 
@@ -190,6 +205,11 @@ int main() {
             if (gameScreen) {
                 gameScreen->draw(window);
             }
+            break;
+
+        case GameState::STATISTICS:  // Add Statistics drawing
+            window.draw(settingsBackground);
+            statisticsMenu.draw(window);
             break;
         }
         window.display();

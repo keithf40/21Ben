@@ -2,7 +2,7 @@
 #include <sstream>
 
 Game::Game(float width, float height, std::string countingMethod, std::vector<int> gameSettings)
-    : roundInProgress(false), screenWidth(width), screenHeight(height)
+    : roundInProgress(false), screenWidth(width), screenHeight(height), strategy(countingMethod)
 {
     if (!font.loadFromFile("assets/ttfFont.ttf")) {
         std::cerr << "Font not found!" << std::endl;
@@ -65,7 +65,7 @@ Game::Game(float width, float height, std::string countingMethod, std::vector<in
     players.push_back(Player("Bot 4", startingMoney));
     players.push_back(Player("Human", startingMoney));
 
-    // Reserve space for players’ card sprites.
+    // Reserve space for players' card sprites.
     playersCardSprites.resize(players.size());
 
     // Setup positions for each player's hand.
@@ -235,30 +235,70 @@ void Game::finishRound() {
     // Only display the outcome for the human player.
     int humanTotal = players[humanIndex].getCurrentHand().getTotalValue();
     std::string outcome = "Human: ";
+    bool isWin = false;
+    bool isDraw = false;
+    
     if (players[humanIndex].getCurrentHand().isBlackjack()) {
         outcome += "Blackjack!";
+        isWin = true;
     }
     else if (humanTotal > 21) {
         outcome += "Busted";
+        isWin = false;
     }
     else if (dealerTotal > 21) {
         outcome += "Win";
+        isWin = true;
     }
     else if (humanTotal > dealerTotal) {
         outcome += "Win";
+        isWin = true;
     }
     else if (humanTotal == dealerTotal) {
         outcome += "Push";
+        isDraw = true;
     }
     else {
         outcome += "Lose";
+        isWin = false;
     }
+    
     message = outcome;
     roundInProgress = false;
     //adds the face down dealer card to the running count
     Hand dealerHand = dealer.getHand();
     counter.modifyCount(dealerHand.getCards()[1]);
+    
+    // Record the game statistics
+    recordGameStats(isWin, isDraw);
+    
     updateDisplay();
+}
+
+void Game::recordGameStats(bool isWin, bool isDraw) {
+    // Get the human player's bet and balance
+    int currentBet = players[humanIndex].getCurrentBet();
+    
+    // Calculate chips won or lost
+    int chipsWon = 0;
+    int chipsLost = 0;
+    
+    if (isWin) {
+        // On a win, player gets their bet back plus winnings
+        if (players[humanIndex].getCurrentHand().isBlackjack()) {
+            // Blackjack pays 3:2
+            chipsWon = currentBet * 1.5;
+        } else {
+            chipsWon = currentBet;
+        }
+    } else if (!isDraw) {
+        // On a loss, player loses their bet
+        chipsLost = currentBet;
+    }
+    // On a draw (push), neither won nor lost
+    
+    // Record the outcome in the stats tracker
+    StatsTracker::getInstance().recordGamePlayed(isWin, isDraw, chipsWon, chipsLost, currentBet, strategy);
 }
 
 bool Game::isTextClicked(const sf::Text& text, sf::RenderWindow& window) {

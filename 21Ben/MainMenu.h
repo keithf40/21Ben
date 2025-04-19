@@ -9,7 +9,7 @@
 class MainMenu {
 public:
     // Enum for menu options: now includes GAME_SETTINGS
-    enum class Option { PLAY, GAME_SETTINGS, SIMULATE, EXIT, NONE };
+    enum class Option { PLAY, GAME_SETTINGS, STATISTICS, SIMULATE, EXIT, NONE };
 
     // Constructor and destructor
     MainMenu(float width, float height);
