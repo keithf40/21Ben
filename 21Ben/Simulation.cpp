@@ -22,7 +22,7 @@ Simulation::Simulation(int deckSize, int minBet, int startingMoney, int playerPo
 	competingCounts = true;
 }
 
-void Simulation::Run(int handsDealt, int rounds) {
+std::vector<std::vector<long long>> Simulation::Run(int handsDealt, int rounds) {
 	for (int i = 0; i < 5; i++) {
 		std::string name = "Position" + std::to_string(i + 1);
 		Player foo(name, startingMoney);
@@ -36,9 +36,16 @@ void Simulation::Run(int handsDealt, int rounds) {
 			outfile << " " << counterTwo->getStrategy();
 		}
 		outfile << "\n";
-		
 	}
 	outfile.close();
+	std::vector<long long>foo;
+	std::vector<std::vector<long long>> finalStats(2, foo);
+	finalStats[0].push_back(rounds);
+	finalStats[0].push_back(handsDealt);
+	std::vector<long long>totals(5, 0);
+	finalStats.push_back(totals);
+	finalStats.push_back(totals);
+
 	for (int i = 0; i < rounds; i++) {
 		deck->shuffle();
 		counterOne->resetCount();
@@ -120,45 +127,41 @@ void Simulation::Run(int handsDealt, int rounds) {
 					players[i].addWinnings(netGain);
 					balanceDiff[i] = players[i].getBalance() - balanceDiff[i];
 					balances[i] += betRatios[i] * balanceDiff[i];
-					outfile << ",";
-					outfile << players[i].getBalance();
+					/*outfile << ",";
+					outfile << players[i].getBalance();*/
 					k++;
 				}
-				outfile << " Count was ";
-				outfile << counterOneCount;
-				outfile << " Dealer was ";
-				outfile << dealerScore;
-				outfile << " Dealer showed ";
-				outfile << dealer.getHand().getCards()[1].getValue();
-				for (auto p : players) {
-					for (auto H : p.getHands()) {
-						outfile << " ";
-						outfile << H.getTotalValue();
-					}
-				}
-				outfile << "\n";
-				outfile << std::to_string(balances[0]);
-				for (int i = 1; i < balances.size(); i++) {
+				
+				//outfile << "\n";
+				//outfile << std::to_string(balances[0]);
+				/*for (int i = 1; i < balances.size(); i++) {
 					outfile << ",";
 					outfile << std::to_string(balances[i]);
 				}
 				outfile << " Count was ";
 				outfile << counterTwoCount;
-				outfile << "\n";
+				outfile << "\n";*/
 				outfile.close();
 			}
 			balanceDiff.clear();
+			
 		}
-		std::ofstream outfile("simulation.txt", std::ios::app);
+		/*std::ofstream outfile("simulation.txt", std::ios::app);
 		outfile << "End of simulation ";
 		outfile << i + 1;
 		outfile << "\n";
-		outfile.close();
+		outfile.close();*/
 		
+		for (int i = 0; i < finalStats[2].size(); i++) {
+			finalStats[2][i] += players[i].getBalance() - startingMoney;
+			finalStats[3][i] += balances[i] - startingMoney;
+		}
 	}
-	
-
-	
+	for (int i = 0; i < finalStats[2].size(); i++) {
+		finalStats[2][i] /= rounds;
+		finalStats[3][i] /= rounds;
+	}
+	return finalStats;
 }
 //we dont need to do this but I felt like putting them in separate functiong might make the code
 //more readable, just theory crafting readable code thats all

@@ -17,7 +17,7 @@ public:
 
     Simulation(int deckSize, int minBet, int startingMoney, int playerPosition, std::string playStyleOne, std::string otherStyle);
 
-    void Run(int handsDealt, int rounds);
+    std::vector<std::vector<long long>> Run(int handsDealt, int rounds);
 
 private:
     Dealer dealer;
