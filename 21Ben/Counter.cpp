@@ -5,8 +5,8 @@
 // Constructor: initializes count and default strategy
 Counter::Counter() {
     count = 0;
-    strategy = "Normal";
-    stratFunc = Normal;
+    strategy = "None";
+    stratFunc = None;
 }
 
 Counter::Counter(std::string strategy) {
