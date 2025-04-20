@@ -4,11 +4,12 @@
 #include "PlayMenu.h"
 #include "Game.h"
 #include "Texture.h"
-#include "Simulation.h"  // Include the Simulation header
+#include "Simulation.h"
+#include "SimulationResults.h"
 #include <memory> // For std::unique_ptr
 
 // Enum to manage different game states
-enum class GameState { MAIN_MENU, PLAY, SIMULATE, GAME };
+enum class GameState { MAIN_MENU, PLAY, SIMULATE, GAME, SIM_RESULTS };
 
 int main() {
     // Create main game window
@@ -30,6 +31,7 @@ int main() {
     MainMenu mainMenu(1200, 800);
     SimulateMenu simulateMenu(1200, 800);
     PlayMenu playMenu(1200, 800);
+    SimulationResults simResults(1200, 800);
 
     // Use a smart pointer for the game screen and delay its creation
     std::unique_ptr<Game> gameScreen = nullptr;
@@ -117,16 +119,24 @@ int main() {
                             // simSettings[4]: player position
                             if (simSettings[0] == 1) {  // Checkbox enabled: competing counts.
                                 Simulation simulation(simSettings[3], simSettings[1], simSettings[2], simSettings[4], playStyleOne, playStyleTwo);
-                                simulation.Run(1000, 100);  // Run simulation: adjust handsDealt and rounds as needed.
+                                std::vector<std::vector<long long>> results;
+                                results = simulation.Run(10000, 100);  // Run simulation: adjust handsDealt and rounds as needed.
+                                int foo = 0;
                             }
                             else {
                                 Simulation simulation(simSettings[3], simSettings[1], simSettings[2], simSettings[4], playStyleOne);
-                                simulation.Run(1000, 100);
+                                simulation.Run(10000, 100);
                             }
                             // After simulation, return to main menu.
-                            currState = GameState::MAIN_MENU;
+                            currState = GameState::SIM_RESULTS;
                         }
                     }
+                }
+                break;
+
+            case GameState::SIM_RESULTS:
+                if (simResults.handleEvent(event, window)) {
+                    currState = GameState::MAIN_MENU;
                 }
                 break;
 
@@ -178,6 +188,11 @@ int main() {
         case GameState::SIMULATE:
             window.draw(settingsBackground);
             simulateMenu.draw(window);
+            break;
+
+        case GameState::SIM_RESULTS:
+            window.draw(menuBackground);
+            simResults.draw(window);
             break;
 
         case GameState::PLAY:
