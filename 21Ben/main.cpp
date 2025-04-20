@@ -119,11 +119,13 @@ int main() {
                             // simSettings[4]: player position
                             if (simSettings[0] == 1) {  // Checkbox enabled: competing counts.
                                 Simulation simulation(simSettings[3], simSettings[1], simSettings[2], simSettings[4], playStyleOne, playStyleTwo);
-                                simulation.Run(1000, 100);  // Run simulation: adjust handsDealt and rounds as needed.
+                                std::vector<std::vector<long long>> results;
+                                results = simulation.Run(10000, 100);  // Run simulation: adjust handsDealt and rounds as needed.
+                                int foo = 0;
                             }
                             else {
                                 Simulation simulation(simSettings[3], simSettings[1], simSettings[2], simSettings[4], playStyleOne);
-                                simulation.Run(1000, 100);
+                                simulation.Run(10000, 100);
                             }
                             // After simulation, return to main menu.
                             currState = GameState::SIM_RESULTS;
