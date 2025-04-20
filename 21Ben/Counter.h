@@ -55,3 +55,5 @@ int R14C(Card& card);
 int WongHalves(Card& card);
 
 int Zen(Card& card);
+
+int None(Card& card);
