@@ -72,6 +72,9 @@ void Counter::setStrategy(std::string newStrategy) {
     else if (strategy == "Zen") {
         stratFunc = Zen;
     }
+    else if (strategy == "Normal") {
+        stratFunc = Normal;
+    }
 }
 
 // Calculates bet size based on count, decks remaining, bankroll, and stealth mode
@@ -428,5 +431,9 @@ int Zen(Card& card) {
     case Rank::King:
         return -2;
     }
+    return 0;
+}
+
+int Normal(Card& card) {
     return 0;
 }
