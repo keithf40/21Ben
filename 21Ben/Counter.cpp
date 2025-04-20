@@ -57,25 +57,25 @@ void Counter::setStrategy(std::string newStrategy) {
     else if (strategy == "Omega2") {
         stratFunc = Omega2;
     }
-    else if (strategy == "RPC") {
+    else if (strategy == "Revere Point Count") {
         stratFunc = RPC;
     }
-    else if (strategy == "RAPC") {
+    else if (strategy == "Revere RAPC") {
         stratFunc = RAPC;
     }
-    else if (strategy == "R14C") {
+    else if (strategy == "Revere 14 Count") {
         stratFunc = R14C;
     }
-    else if (strategy == "WongHalves") {
+    else if (strategy == "Wong Halves") {
         stratFunc = WongHalves;
     }
-    else if (strategy == "Zen") {
+    else if (strategy == "Zen Count") {
         stratFunc = Zen;
     }
-    else if (strategy == "Normal") {
-        stratFunc = Normal;
+    else if (strategy == "None") {
+        stratFunc = None;
     }
-    else stratFunc = Normal;
+    else stratFunc = None;
 }
 
 // Calculates bet size based on count, decks remaining, bankroll, and stealth mode
@@ -435,6 +435,6 @@ int Zen(Card& card) {
     return 0;
 }
 
-int Normal(Card& card) {
+int None(Card& card) {
     return 0;
 }
