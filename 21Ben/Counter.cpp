@@ -5,8 +5,8 @@
 // Constructor: initializes count and default strategy
 Counter::Counter() {
     count = 0;
-    strategy = "HiLo";
-    stratFunc = HiLo;
+    strategy = "Normal";
+    stratFunc = Normal;
 }
 
 Counter::Counter(std::string strategy) {
@@ -75,6 +75,7 @@ void Counter::setStrategy(std::string newStrategy) {
     else if (strategy == "Normal") {
         stratFunc = Normal;
     }
+    else stratFunc = Normal;
 }
 
 // Calculates bet size based on count, decks remaining, bankroll, and stealth mode
