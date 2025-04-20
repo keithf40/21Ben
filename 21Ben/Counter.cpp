@@ -5,8 +5,8 @@
 // Constructor: initializes count and default strategy
 Counter::Counter() {
     count = 0;
-    strategy = "HiLo";
-    stratFunc = HiLo;
+    strategy = "None";
+    stratFunc = None;
 }
 
 Counter::Counter(std::string strategy) {
@@ -57,21 +57,25 @@ void Counter::setStrategy(std::string newStrategy) {
     else if (strategy == "Omega2") {
         stratFunc = Omega2;
     }
-    else if (strategy == "RPC") {
+    else if (strategy == "Revere Point Count") {
         stratFunc = RPC;
     }
-    else if (strategy == "RAPC") {
+    else if (strategy == "Revere RAPC") {
         stratFunc = RAPC;
     }
-    else if (strategy == "R14C") {
+    else if (strategy == "Revere 14 Count") {
         stratFunc = R14C;
     }
-    else if (strategy == "WongHalves") {
+    else if (strategy == "Wong Halves") {
         stratFunc = WongHalves;
     }
-    else if (strategy == "Zen") {
+    else if (strategy == "Zen Count") {
         stratFunc = Zen;
     }
+    else if (strategy == "None") {
+        stratFunc = None;
+    }
+    else stratFunc = None;
 }
 
 // Calculates bet size based on count, decks remaining, bankroll, and stealth mode
@@ -428,5 +432,9 @@ int Zen(Card& card) {
     case Rank::King:
         return -2;
     }
+    return 0;
+}
+
+int None(Card& card) {
     return 0;
 }
