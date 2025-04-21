@@ -26,6 +26,10 @@ private:
     sf::Text yAxisLabelBottom;
     sf::RectangleShape legendBox1, legendBox2;
     sf::Text legendText1, legendText2;
-    int moneyCap = 100; // will be updated with actual startingMoney
+    sf::Text legendTitle;
+    sf::Text xAxisLabel;
+    sf::Text yAxisLabel;
+    std::vector<sf::Text> barValueLabels;
+    int fixedBase = 100; // will be updated with actual startingMoney
     std::string style2Name = "N/A";
 };

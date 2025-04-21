@@ -185,14 +185,14 @@ SimulateMenu::SimulateMenu(float width, float height)
     slider3Knob.setSize(sf::Vector2f(15.f, 25.f));
     slider3Knob.setFillColor(sf::Color::Yellow);
     {
-        float ratio = float(gameSettings[4] - 1) / float(5 - 1);
+        float ratio = float(gameSettings[4] - 100) / float(1000 - 100);
         float knobX = slider3Track.getPosition().x + ratio * slider3Track.getSize().x;
         slider3Knob.setPosition(knobX - slider3Knob.getSize().x / 2,
             slider3Track.getPosition().y - (slider3Knob.getSize().y - slider3Track.getSize().y) / 2);
     }
 
     slider3Label.setFont(font);
-    slider3Label.setString("Player Position: " + std::to_string(gameSettings[4]));
+    slider3Label.setString("Simulations: " + std::to_string(gameSettings[4]));
     slider3Label.setCharacterSize(25);
     slider3Label.setFillColor(sf::Color::White);
     slider3Label.setPosition(slider3Track.getPosition().x, slider3Track.getPosition().y - 40.f);
@@ -355,12 +355,12 @@ void SimulateMenu::handleEvent(const sf::Event& event, sf::RenderWindow& window)
             if (newX > rightBound) newX = rightBound;
             slider3Knob.setPosition(newX - slider3Knob.getSize().x / 2, slider3Knob.getPosition().y);
             float ratio = (newX - leftBound) / slider3Track.getSize().x;
-            double raw = 1 + ratio * (5 - 1);
-            int quantized = 1 + static_cast<int>(std::round(raw - 1));
-            if (quantized < 1) quantized = 1;
-            if (quantized > 5) quantized = 5;
+            double raw = 100 + ratio * (1000 - 100);
+            int quantized = 100 + static_cast<int>(std::round((raw - 100) / 50.0)) * 50;
+            if (quantized < 100) quantized = 100;
+            if (quantized > 1000) quantized = 1000;
             gameSettings[4] = quantized;
-            slider3Label.setString("Player Position: " + std::to_string(gameSettings[4]));
+            slider3Label.setString("Simulations: " + std::to_string(gameSettings[4]));
         }
 
         // Highlight Back/Simulate buttons
@@ -474,7 +474,7 @@ void SimulateMenu::handleEvent(const sf::Event& event, sf::RenderWindow& window)
             slider2Label.setString("Buy-In: " + std::to_string(gameSettings[2]));
         }
 
-        // Slider interaction for Player Position
+        // Slider interaction for simulations
         if (slider3Knob.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos)) ||
             slider3Track.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
             isDraggingSlider3 = true;
@@ -485,12 +485,12 @@ void SimulateMenu::handleEvent(const sf::Event& event, sf::RenderWindow& window)
             if (newX > rightBound) newX = rightBound;
             slider3Knob.setPosition(newX - slider3Knob.getSize().x / 2, slider3Knob.getPosition().y);
             float ratio = (newX - leftBound) / slider3Track.getSize().x;
-            double raw = 1 + ratio * (5 - 1);
-            int quantized = 1 + static_cast<int>(std::round(raw - 1));
-            if (quantized < 1) quantized = 1;
-            if (quantized > 5) quantized = 5;
+            double raw = 100 + ratio * (1000 - 100);
+            int quantized = 100 + static_cast<int>(std::round((raw - 100) / 50.0)) * 50;
+            if (quantized < 100) quantized = 100;
+            if (quantized > 1000) quantized = 1000;
             gameSettings[4] = quantized;
-            slider3Label.setString("Player Position: " + std::to_string(gameSettings[4]));
+            slider3Label.setString("Simulations: " + std::to_string(gameSettings[4]));
         }
 
         // Strategy dropdown interaction (only if assistance is enabled)

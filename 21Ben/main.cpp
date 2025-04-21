@@ -116,18 +116,18 @@ int main() {
                             // simSettings[3]: deck size (amount of decks)
                             // simSettings[1]: minimum bet
                             // simSettings[2]: starting money
-                            // simSettings[4]: player position
+                            // simSettings[4]: simulations
                             if (simSettings[0] == 1) {  // Checkbox enabled: competing counts.
                                 Simulation simulation(simSettings[3], simSettings[1], simSettings[2], simSettings[4], playStyleOne, playStyleTwo);
                                 std::vector<std::vector<long long>> results;
-                                auto simResultVector = simulation.Run(1000, 100);
+                                auto simResultVector = simulation.Run(1000, simSettings[4]);
                                 simResults.setSimulationInfo(simResultVector[0][0], simResultVector[0][1], playStyleOne, playStyleTwo);
                                 simResults.setAverageGains(simResultVector[2], simResultVector[3], playStyleOne, playStyleTwo, simSettings[2]);
                             }
                             else {
                                 Simulation simulation(simSettings[3], simSettings[1], simSettings[2], simSettings[4], playStyleOne);
                                 std::vector<std::vector<long long>> results;
-                                auto simResultVector = simulation.Run(1000, 100);
+                                auto simResultVector = simulation.Run(1000, simSettings[4]);
                                 simResults.setSimulationInfo(simResultVector[0][0], simResultVector[0][1], playStyleOne, "N/A");
                                 simResults.setAverageGains(simResultVector[2], simResultVector[3], playStyleOne, "N/A", simSettings[2]);
                             }

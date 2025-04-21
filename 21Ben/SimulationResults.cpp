@@ -35,10 +35,14 @@ void SimulationResults::draw(sf::RenderWindow& window) {
     window.draw(yAxisLabelBottom);
     window.draw(legendBox1);
     window.draw(legendText1);
+    window.draw(legendTitle);
     if (style2Name != "N/A") {
         window.draw(legendBox2);
         window.draw(legendText2);
     }
+    window.draw(xAxisLabel);
+    window.draw(yAxisLabel);
+    for (const auto& label : barValueLabels) window.draw(label);
 }
 
 bool SimulationResults::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
@@ -69,7 +73,7 @@ void SimulationResults::setAverageGains(const std::vector<long long>& gains1, co
     barsStyle1.clear();
     barsStyle2.clear();
     playerLabels.clear();
-    moneyCap = startingMoney;
+    barValueLabels.clear();
     style2Name = style2;
 
     float graphWidth = resultBox.getSize().x * 0.75f;
@@ -83,27 +87,50 @@ void SimulationResults::setAverageGains(const std::vector<long long>& gains1, co
     float totalBarWidth = (style2 != "N/A") ? (2 * barWidth + barSpacing) : barWidth;
 
     float graphBottom = graphY + graphHeight; // y-position of -startingMoney
-    float base = -moneyCap; // Used to normalize gain to [0, 2*moneyCap]
+    fixedBase = 150;
+    float base = -fixedBase; // Used to normalize gain to [0, 2*fixedBase]
 
     for (int i = 0; i < 5; ++i) {
         float groupX = graphX + groupSpacing * i + (groupSpacing - totalBarWidth) / 2.f;
 
         // Yellow bar (style1)
-        float normalized1 = static_cast<float>(gains1[i] - base) / (2.f * moneyCap);
+        float normalized1 = static_cast<float>(gains1[i] - base) / (2.f * fixedBase);
         float height1 = std::max(0.f, normalized1 * graphHeight);
         sf::RectangleShape bar1(sf::Vector2f(barWidth, height1));
         bar1.setFillColor(sf::Color::Yellow);
         bar1.setPosition(groupX, graphBottom - height1);
         barsStyle1.push_back(bar1);
 
+        // Label for Yellow bar
+        sf::Text valueLabel1;
+        valueLabel1.setFont(font);
+        valueLabel1.setCharacterSize(16);
+        valueLabel1.setFillColor(sf::Color::White);
+        valueLabel1.setString(std::to_string(gains1[i]));
+        sf::FloatRect val1Bounds = valueLabel1.getLocalBounds();
+        valueLabel1.setOrigin(val1Bounds.width / 2.f, val1Bounds.height);
+        valueLabel1.setPosition(groupX + barWidth / 2.f, graphBottom - height1 - 5.f);
+        barValueLabels.push_back(valueLabel1);
+
         // Green bar (style2)
         if (style2 != "N/A") {
-            float normalized2 = static_cast<float>(gains2[i] - base) / (2.f * moneyCap);
+            float normalized2 = static_cast<float>(gains2[i] - base) / (2.f * fixedBase);
             float height2 = std::max(0.f, normalized2 * graphHeight);
             sf::RectangleShape bar2(sf::Vector2f(barWidth, height2));
             bar2.setFillColor(sf::Color::Green);
             bar2.setPosition(groupX + barWidth + barSpacing, graphBottom - height2);
             barsStyle2.push_back(bar2);
+
+            // Label for Green bar
+            sf::Text valueLabel2;
+            valueLabel2.setFont(font);
+            valueLabel2.setCharacterSize(16);
+            valueLabel2.setFillColor(sf::Color::White);
+            valueLabel2.setString(std::to_string(gains2[i]));
+            sf::FloatRect val2Bounds = valueLabel2.getLocalBounds();
+            valueLabel2.setOrigin(val2Bounds.width / 2.f, val2Bounds.height);
+            valueLabel2.setPosition(groupX + barWidth + barSpacing + barWidth / 2.f, graphBottom - height2 - 5.f);
+            barValueLabels.push_back(valueLabel2);
         }
 
         // Player label (centered under the group)
@@ -156,7 +183,7 @@ void SimulationResults::setAverageGains(const std::vector<long long>& gains1, co
     yAxisLabelTop.setFont(font);
     yAxisLabelTop.setCharacterSize(18);
     yAxisLabelTop.setFillColor(sf::Color::White);
-    yAxisLabelTop.setString("+" + std::to_string(moneyCap));
+    yAxisLabelTop.setString("+" + std::to_string(fixedBase));
     yAxisLabelTop.setPosition(graphX - 60.f, graphY - 20.f);
 
     yAxisLabelZero.setFont(font);
@@ -164,20 +191,21 @@ void SimulationResults::setAverageGains(const std::vector<long long>& gains1, co
     yAxisLabelZero.setFillColor(sf::Color::White);
     yAxisLabelZero.setString("0");
     yAxisLabelZero.setPosition(graphX - 30.f,
-        graphBottom - ((0 - base) / (2.f * moneyCap)) * graphHeight - 10.f);
+        graphBottom - ((0 - base) / (2.f * fixedBase)) * graphHeight - 10.f);
 
     yAxisLabelBottom.setFont(font);
     yAxisLabelBottom.setCharacterSize(18);
     yAxisLabelBottom.setFillColor(sf::Color::White);
-    yAxisLabelBottom.setString("-" + std::to_string(moneyCap));
+    yAxisLabelBottom.setString("-" + std::to_string(fixedBase));
     yAxisLabelBottom.setPosition(graphX - 60.f, graphBottom - 20.f);
     
     // Legend setup
+    // ----- Legend setup -----
     float legendBoxSize = 15.f;
-    float legendPadding = 10.f;
+    float legendPadding = 8.f;
 
-    float legendX = graphX + graphWidth - 100.f; // near top-right of graph
-    float legendY = graphY - 30.f;               // above graph
+    float legendX = graphX + graphWidth - 100.f; // top right of graph
+    float legendY = graphY - 30.f;               // above graph a bit
 
     // Yellow box + text (style1)
     legendBox1.setSize(sf::Vector2f(legendBoxSize, legendBoxSize));
@@ -188,9 +216,9 @@ void SimulationResults::setAverageGains(const std::vector<long long>& gains1, co
     legendText1.setCharacterSize(18);
     legendText1.setFillColor(sf::Color::White);
     legendText1.setString(style1);
-    legendText1.setPosition(legendX + legendBoxSize + 6.f, legendY - 2.f); // slight vertical nudge
+    legendText1.setPosition(legendX + legendBoxSize + 6.f, legendY - 2.f);
 
-    // Green box + text (style2, only if it's not "N/A")
+    // Green box + text (style2), only if applicable
     if (style2 != "N/A") {
         legendBox2.setSize(sf::Vector2f(legendBoxSize, legendBoxSize));
         legendBox2.setFillColor(sf::Color::Green);
@@ -200,13 +228,47 @@ void SimulationResults::setAverageGains(const std::vector<long long>& gains1, co
         legendText2.setCharacterSize(18);
         legendText2.setFillColor(sf::Color::White);
         legendText2.setString(style2);
-        legendText2.setPosition(legendX + legendBoxSize + 6.f, legendY + legendBoxSize + legendPadding - 2.f);
+        legendText2.setPosition(legendX + legendBoxSize + 6.f, legendBox2.getPosition().y - 2.f);
     }
     else {
-        // If there's no second style, reset dimensions to hide them
+        // Hide second legend if not needed
         legendBox2.setSize(sf::Vector2f(0, 0));
         legendText2.setString("");
     }
+
+    // Legend title
+    legendTitle.setFont(font);
+    legendTitle.setCharacterSize(18);
+    legendTitle.setFillColor(sf::Color::White);
+    legendTitle.setString("Card Counting Method:");
+
+    // Position the title above the first legend box
+    sf::FloatRect titleBounds = legendTitle.getLocalBounds();
+    legendTitle.setOrigin(0.f, 0.f); // Align top-left
+    legendTitle.setPosition(legendX, legendY - titleBounds.height - 5.f);
+
+    // X Axis Label: "Players"
+    xAxisLabel.setFont(font);
+    xAxisLabel.setCharacterSize(20);
+    xAxisLabel.setFillColor(sf::Color::White);
+    xAxisLabel.setString("Players");
+
+    // Centered below all player labels
+    sf::FloatRect xLabelBounds = xAxisLabel.getLocalBounds();
+    xAxisLabel.setOrigin(xLabelBounds.width / 2.f, 0.f);
+    xAxisLabel.setPosition(graphX + graphWidth / 2.f, graphBottom + 30.f);  // Adjust Y if needed
+
+    // Y Axis Label: "Buy-In"
+    yAxisLabel.setFont(font);
+    yAxisLabel.setCharacterSize(20);
+    yAxisLabel.setFillColor(sf::Color::White);
+    yAxisLabel.setString("Profit / Loss");
+
+    // Rotate and position along Y axis
+    sf::FloatRect yLabelBounds = yAxisLabel.getLocalBounds();
+    yAxisLabel.setOrigin(yLabelBounds.width / 2.f, yLabelBounds.height / 2.f);
+    yAxisLabel.setRotation(-90.f);
+    yAxisLabel.setPosition(graphX - 60.f, graphY + graphHeight / 2.f);
 }
 
 
