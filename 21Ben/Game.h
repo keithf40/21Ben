@@ -12,6 +12,8 @@
 #include "Texture.h"      // For card images
 #include "OptimalPlay.h"  // For bot strategy
 #include "Counter.h"
+#include "StatsTracker.h" // For statistics tracking
+
 class Game {
 public:
     enum class Option { DEAL, QUIT, NONE };
@@ -31,7 +33,7 @@ public:
 
 private:
     sf::Font font;
-    
+
     // UI Buttons:
     sf::Text dealButton;      // Shown when round is not active.
     sf::Text hitButton;       // For human actions.
@@ -48,7 +50,7 @@ private:
 
     // Human player index is now 4.
     const int humanIndex = 4;
-    
+
     int minBet = 15;
     int startingMoney = 100;
 
@@ -56,11 +58,12 @@ private:
 
     bool roundInProgress;
     std::string message;
+    std::string strategy; // Store the playing strategy for statistics tracking
 
     // Message text.
     sf::Text messageText;
 
-    // Vectors of sprites for displaying players’ cards.
+    // Vectors of sprites for displaying players' cards.
     std::vector<std::vector<sf::Sprite>> playersCardSprites;
     // Sprites for the dealer's cards.
     std::vector<sf::Sprite> dealerCardSprites;
@@ -110,6 +113,9 @@ private:
 
     // Get card texture.
     sf::Texture& getCardTexture(const Card& card);
+
+    // Record game statistics based on outcome
+    void recordGameStats(bool isWin, bool isDraw);
 };
 
 #endif // GAME_H

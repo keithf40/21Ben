@@ -9,9 +9,9 @@ MainMenu::MainMenu(float width, float height) : selectedIndex(0) {
     }
 
     // Menu option labels and positions.
-    // Updated labels vector to include "Game Settings" between Play and Simulate.
-    const std::vector<std::string> labels = { "Play", "Game Settings", "Simulate", "Exit" };
-    const float startY = 200.f;
+    // Updated labels vector to include Statistics
+    const std::vector<std::string> labels = { "Play", "Game Settings", "Statistics", "Simulate", "Exit" };
+    const float startY = 100.f;
     const float spacing = 100.f;
 
     for (std::size_t i = 0; i < labels.size(); ++i) {
@@ -21,7 +21,7 @@ MainMenu::MainMenu(float width, float height) : selectedIndex(0) {
         option.setCharacterSize(70);
         // Highlight the first option (Play) by default.
         option.setFillColor(i == 0 ? sf::Color::Yellow : sf::Color::White);
-        option.setPosition(sf::Vector2f(100.f, startY + i * spacing));
+        option.setPosition(sf::Vector2f(50.f, startY + i * spacing));
         options.push_back(option);
     }
 }
@@ -63,8 +63,9 @@ MainMenu::Option MainMenu::getSelectedOption() const {
     switch (selectedIndex) {
     case 0: return Option::PLAY;
     case 1: return Option::GAME_SETTINGS;
-    case 2: return Option::SIMULATE;
-    case 3: return Option::EXIT;
+    case 2: return Option::STATISTICS;
+    case 3: return Option::SIMULATE;
+    case 4: return Option::EXIT;
     default: return Option::NONE;
     }
 }
