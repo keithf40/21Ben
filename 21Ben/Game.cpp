@@ -141,6 +141,12 @@ Game::Game(float width, float height, std::string countingMethod, std::vector<in
         sliderTrack.getPosition().y - 50.f
     );
     sliderLabel.setString("Bet: " + std::to_string(currentBetAmount));
+
+    turnsUntilPlayText.setFont(font);
+    turnsUntilPlayText.setCharacterSize(40);
+    turnsUntilPlayText.setFillColor(sf::Color::White);
+    turnsUntilPlayText.setPosition(screenWidth / 2.5, screenHeight / 2 - 20);
+    turnsUntilPlayText.setString("");
 }
 
 void Game::startNewRound() {
@@ -671,6 +677,13 @@ void Game::draw(sf::RenderWindow& window) {
             window.draw(dealButton);
         }
     }
+
+    else if (roundInProgress && currentPlayerTurn != humanIndex) {
+        int turnsLeft = std::max(0, humanIndex - static_cast<int>(currentPlayerTurn));
+        turnsUntilPlayText.setString("Turns till play: " + std::to_string(turnsLeft));
+        window.draw(turnsUntilPlayText);
+    }
+
     else if (roundInProgress && currentPlayerTurn == humanIndex) {
         window.draw(hitButton);
         window.draw(standButton);

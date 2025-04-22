@@ -42,6 +42,7 @@ private:
     sf::Text splitButton;     // For human actions.
     sf::Text quitButton;      // Quits the game and returns to main menu.
     sf::Text placeBetButton;
+    sf::Text turnsUntilPlayText;
 
     int currentBetAmount;
     bool isDraggingSlider = false;
