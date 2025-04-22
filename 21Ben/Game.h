@@ -41,6 +41,13 @@ private:
     sf::Text doubleButton;    // For human actions.
     sf::Text splitButton;     // For human actions.
     sf::Text quitButton;      // Quits the game and returns to main menu.
+    sf::Text placeBetButton;
+
+    int currentBetAmount;
+    bool isDraggingSlider = false;
+    sf::RectangleShape sliderTrack;
+    sf::RectangleShape sliderKnob;
+    sf::Text sliderLabel;
 
     // Core game components.
     Deck deck;
@@ -50,13 +57,14 @@ private:
 
     // Human player index is now 4.
     const int humanIndex = 4;
-
+    bool bettingPhase = true;
+    bool readyToBet = true;
+    bool roundInProgress = false;
     int minBet = 15;
     int startingMoney = 100;
 
     std::size_t selectedIndex;
 
-    bool roundInProgress;
     std::string message;
     std::string strategy; // Store the playing strategy for statistics tracking
 

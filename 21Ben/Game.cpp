@@ -1,5 +1,6 @@
 #include "Game.h"
 #include <sstream>
+#include <algorithm>
 
 Game::Game(float width, float height, std::string countingMethod, std::vector<int> gameSettings)
     : roundInProgress(false), screenWidth(width), screenHeight(height), strategy(countingMethod)
@@ -51,6 +52,12 @@ Game::Game(float width, float height, std::string countingMethod, std::vector<in
     quitButton.setFillColor(sf::Color::White);
     quitButton.setPosition(sf::Vector2f(10.f, height / 1.1f));
 
+    placeBetButton.setFont(font);
+    placeBetButton.setString("Place Bet");
+    placeBetButton.setCharacterSize(50);
+    placeBetButton.setFillColor(sf::Color::White);
+    placeBetButton.setPosition(sf::Vector2f(screenWidth / 2.f - 100.f, screenHeight / 2.f - 100.f));
+
     // Setup message text.
     messageText.setFont(font);
     messageText.setCharacterSize(40);
@@ -83,8 +90,8 @@ Game::Game(float width, float height, std::string countingMethod, std::vector<in
         p.placeBet(minBet);
     }
 
-    // Start round and set turn order.
-    startNewRound();
+    //// Start round and set turn order.
+    //startNewRound();
 
     // Position the action buttons under the human's hand.
     // Human hand y is at screenHeight - 250, so we place buttons slightly below that.
@@ -94,6 +101,46 @@ Game::Game(float width, float height, std::string countingMethod, std::vector<in
     standButton.setPosition(actionX + 120.f, actionY);
     doubleButton.setPosition(actionX + 240.f, actionY);
     splitButton.setPosition(actionX + 360.f, actionY);
+
+    // initial bet defaults to minBet
+    currentBetAmount = minBet;
+
+    // initialize current bet to the minimum
+    currentBetAmount = minBet;
+
+    sliderTrack.setSize({ 250.f, 5.f });
+    sliderTrack.setFillColor(sf::Color::White);
+    float trackY = placeBetButton.getPosition().y
+        + placeBetButton.getCharacterSize()
+        + 60.f;   // <- increased from 20 to 60
+    sliderTrack.setPosition(placeBetButton.getPosition().x, trackY);
+    sliderKnob.setPosition(
+        sliderTrack.getPosition().x,
+        trackY + sliderTrack.getSize().y / 2.f
+    );
+    sliderLabel.setPosition(
+        sliderTrack.getPosition().x,
+        trackY - 30.f  // stays 30px above the track
+    );
+
+
+    sliderKnob.setSize({ 15.f, 25.f });
+    sliderKnob.setFillColor(sf::Color::Yellow);
+    // origin at center so we can clamp by knob center
+    sliderKnob.setOrigin(sliderKnob.getSize() / 2.f);
+    // start at leftmost
+    sliderKnob.setPosition(
+        sliderTrack.getPosition().x,
+        sliderTrack.getPosition().y + sliderTrack.getSize().y / 2.f
+    );
+    sliderLabel.setFont(font);
+    sliderLabel.setCharacterSize(30);
+    sliderLabel.setFillColor(sf::Color::White);
+    sliderLabel.setPosition(
+        sliderTrack.getPosition().x,
+        sliderTrack.getPosition().y - 50.f
+    );
+    sliderLabel.setString("Bet: " + std::to_string(currentBetAmount));
 }
 
 void Game::startNewRound() {
@@ -102,9 +149,17 @@ void Game::startNewRound() {
         counter.resetCount();
     }
     dealer.clear();
-    for (auto& p : players) {
-        p.reset();
-        p.placeBet(counter.getBet(deck.getDecksRemaining(), p.getBalance(), minBet, false));
+    for (size_t i = 0; i < players.size(); ++i) {
+        players[i].reset();
+        if (i == humanIndex) {
+            players[i].placeBet(currentBetAmount);
+        }
+        else {
+            players[i].placeBet(
+                counter.getBet(deck.getDecksRemaining(),
+                    players[i].getBalance(),
+                    minBet, false));
+        }
     }
     roundInProgress = true;
     message = "";
@@ -273,6 +328,9 @@ void Game::finishRound() {
     recordGameStats(isWin, isDraw);
 
     updateDisplay();
+    roundInProgress = false;
+    bettingPhase = false;
+    readyToBet = false;
 }
 
 void Game::recordGameStats(bool isWin, bool isDraw) {
@@ -384,6 +442,31 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
     // Process mouse and keyboard events.
     if (event.type == sf::Event::MouseMoved) {
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+        if (isDraggingSlider) {
+            float newX = static_cast<float>(mousePos.x);
+            float leftBound = sliderTrack.getPosition().x;
+            float rightBound = leftBound + sliderTrack.getSize().x;
+            // clamp to track ends
+            newX = (newX < leftBound) ? leftBound : (newX > rightBound ? rightBound : newX);
+            sliderKnob.setPosition(
+                newX - sliderKnob.getSize().x / 2.f,
+                sliderTrack.getPosition().y + sliderTrack.getSize().y / 2.f
+            );
+
+            float ratio = (newX - leftBound) / sliderTrack.getSize().x;
+            int maxBet = players[humanIndex].getBalance();
+
+            // map to [minBet, maxBet], then quantize to 5
+            double raw = minBet + ratio * (maxBet - minBet);
+            int quantized = minBet + static_cast<int>(std::round((raw - minBet) / 5.0)) * 5;
+            if (quantized < minBet) quantized = minBet;
+            if (quantized > maxBet) quantized = maxBet;
+
+            currentBetAmount = quantized;
+            sliderLabel.setString("Bet: " + std::to_string(currentBetAmount));
+        }
+
+     
         // Highlight Quit button
         if (quitButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
             quitButton.setFillColor(sf::Color::Yellow);
@@ -429,49 +512,87 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
         }
     }
 
+    if (event.type == sf::Event::MouseButtonPressed &&
+        event.mouseButton.button == sf::Mouse::Left &&
+        readyToBet && bettingPhase)
+    {
+        sf::Vector2i mp = sf::Mouse::getPosition(window);
+        sf::Vector2f mf(mp);
+        if (sliderKnob.getGlobalBounds().contains(mf) ||
+            sliderTrack.getGlobalBounds().contains(mf))
+        {
+            isDraggingSlider = true;
+        }
+    }
+
+
     if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+
+        isDraggingSlider = false;
+
         if (isTextClicked(quitButton, window)) {
-            selectedIndex = 1;  // Set selected index to 1 for Quit.
-            // Additional quitting logic if necessary.
+            selectedIndex = 1;
+            return;
         }
 
-        if (!roundInProgress) {
-            if (isTextClicked(dealButton, window))
+        if (!roundInProgress && readyToBet && bettingPhase) {
+            if (isTextClicked(placeBetButton, window)) {
+                bettingPhase = false;
+                readyToBet = false;
                 startNewRound();
+            }
+            return;
         }
-        else {
-            // Process human actions only if it's the human's turn.
-            if (currentPlayerTurn == humanIndex) {
-                if (isTextClicked(hitButton, window)) {
-                    players[humanIndex].hit(deck, counter);
-                    if (players[humanIndex].isBusted()) {
-                        message = "You busted!";
-                        finishRound();
-                    }
-                    updateDisplay();
-                }
-                else if (isTextClicked(standButton, window)) {
+
+        if (!roundInProgress && !readyToBet && !bettingPhase) {
+            if (isTextClicked(dealButton, window)) {
+                readyToBet = true;
+                bettingPhase = true;
+                for (auto& v : playersCardSprites)
+                    v.clear();
+                dealerCardSprites.clear();
+                message = "";
+                messageText.setString("");
+
+                currentBetAmount = minBet;
+                float left = sliderTrack.getPosition().x;
+                float midY = sliderTrack.getPosition().y + sliderTrack.getSize().y / 2.f;
+                sliderKnob.setPosition(left, midY);
+                sliderLabel.setString("Bet: " + std::to_string(currentBetAmount));
+            }
+            return;
+        }
+
+        if (roundInProgress && currentPlayerTurn == humanIndex) {
+            if (isTextClicked(hitButton, window)) {
+                players[humanIndex].hit(deck, counter);
+                if (players[humanIndex].isBusted()) {
+                    message = "You busted!";
                     finishRound();
-                    updateDisplay();
                 }
-                else if (isTextClicked(doubleButton, window)) {
-                    if (players[humanIndex].getCurrentBet() <= players[humanIndex].getBalance()) {
-                        players[humanIndex].placeBet(players[humanIndex].getCurrentBet());
+                updateDisplay();
+            }
+            else if (isTextClicked(standButton, window)) {
+                finishRound();
+                updateDisplay();
+            }
+            else if (isTextClicked(doubleButton, window)) {
+                if (players[humanIndex].getCurrentBet() <= players[humanIndex].getBalance()) {
+                    players[humanIndex].placeBet(players[humanIndex].getCurrentBet());
+                    players[humanIndex].hit(deck, counter);
+                    finishRound();
+                }
+                updateDisplay();
+            }
+            else if (isTextClicked(splitButton, window)) {
+                if (players[humanIndex].split()) {
+                    if (players[humanIndex].getCurrentHand().getCards().size() < 2)
                         players[humanIndex].hit(deck, counter);
-                        finishRound();
-                    }
                     updateDisplay();
                 }
-                else if (isTextClicked(splitButton, window)) {
-                    if (players[humanIndex].split()) {
-                        if (players[humanIndex].getCurrentHand().getCards().size() < 2)
-                            players[humanIndex].hit(deck, counter);
-                        updateDisplay();
-                    }
-                    else {
-                        message = "Cannot split this hand.";
-                        updateDisplay();
-                    }
+                else {
+                    message = "Cannot split this hand.";
+                    updateDisplay();
                 }
             }
         }
@@ -536,16 +657,25 @@ void Game::draw(sf::RenderWindow& window) {
     // Draw the message text.
     window.draw(messageText);
     // Draw human action buttons (or the Deal button) on top.
+        // always draw quit
     window.draw(quitButton);
-    if (!roundInProgress)
-        window.draw(dealButton);
-    else {
-        if (currentPlayerTurn == humanIndex) {
-            window.draw(hitButton);
-            window.draw(standButton);
-            window.draw(doubleButton);
-            window.draw(splitButton);
+
+    if (!roundInProgress) {
+        if (readyToBet && bettingPhase) {
+            window.draw(placeBetButton);
+            window.draw(sliderTrack);
+            window.draw(sliderKnob);
+            window.draw(sliderLabel);
         }
+        else {
+            window.draw(dealButton);
+        }
+    }
+    else if (roundInProgress && currentPlayerTurn == humanIndex) {
+        window.draw(hitButton);
+        window.draw(standButton);
+        window.draw(doubleButton);
+        window.draw(splitButton);
     }
 
     // Update bot moves after drawing.

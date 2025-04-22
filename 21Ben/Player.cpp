@@ -19,6 +19,7 @@ void Player::reset() {
 void Player::placeBet(long long amount) {
     if (amount > balance) {
         std::cerr << "Not enough balance to place this bet\n";
+        std::cerr << "Balance: " << balance << " Amount: " << amount << "\n";
         return;
     }
     hands[currentHandIndex].addBet(amount) ;
