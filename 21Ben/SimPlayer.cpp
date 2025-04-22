@@ -111,7 +111,7 @@ void SimPlayer::setBank(long long bank) {
     Balance[0] = bank;
     Balance[1] = bank;
 }
-
+/*
 bool doubleDown(Deck& deck) {
     if ()
-}
+}*/

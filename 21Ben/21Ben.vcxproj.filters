@@ -60,6 +60,15 @@
     <ClCompile Include="SimulationResults.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SimPlayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StatisticsMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StatsTracker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Card.h">
@@ -102,6 +111,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SimulationResults.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SimPlayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StatisticsMenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StatsTracker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

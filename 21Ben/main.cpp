@@ -6,10 +6,11 @@
 #include "Texture.h"
 #include "Simulation.h"
 #include "SimulationResults.h"
+#include "StatisticsMenu.h"
 #include <memory> // For std::unique_ptr
 
 // Enum to manage different game states
-enum class GameState { MAIN_MENU, PLAY, SIMULATE, GAME, SIM_RESULTS };
+enum class GameState { MAIN_MENU, PLAY, SIMULATE, GAME, SIM_RESULTS, STATISTICS };
 
 int main() {
     // Create main game window
@@ -32,6 +33,7 @@ int main() {
     SimulateMenu simulateMenu(1200, 800);
     PlayMenu playMenu(1200, 800);
     SimulationResults simResults(1200, 800);
+    StatisticsMenu statisticsMenu(1200, 800);
 
     // Use a smart pointer for the game screen and delay its creation
     std::unique_ptr<Game> gameScreen = nullptr;
@@ -49,7 +51,7 @@ int main() {
     }
     sf::Text defaultSettingsText;
     defaultSettingsText.setFont(font);
-    defaultSettingsText.setString("Default Settings:\nSingle Deck\nMin. Bet: $15\nBuy-In: $100\nPlayer Position: 1");
+    defaultSettingsText.setString("Default Settings:\nSingle-Deck   Min. Bet: $15\nBuy-In: $100   Player Position: 1");
     defaultSettingsText.setCharacterSize(30);
     defaultSettingsText.setFillColor(sf::Color::White);
     // Define default game settings and strategy
@@ -93,6 +95,10 @@ int main() {
                         else if (selected == MainMenu::Option::EXIT) {
                             window.close();
                         }
+                        else if (selected == MainMenu::Option::STATISTICS) {
+                            statisticsMenu.updateStats();
+                            currState = GameState::STATISTICS;
+                        }
                     }
                 }
                 break;
@@ -116,16 +122,20 @@ int main() {
                             // simSettings[3]: deck size (amount of decks)
                             // simSettings[1]: minimum bet
                             // simSettings[2]: starting money
-                            // simSettings[4]: player position
+                            // simSettings[4]: simulations
                             if (simSettings[0] == 1) {  // Checkbox enabled: competing counts.
                                 Simulation simulation(simSettings[3], simSettings[1], simSettings[2], simSettings[4], playStyleOne, playStyleTwo);
                                 std::vector<std::vector<long long>> results;
-                                results = simulation.Run(10000, 100);  // Run simulation: adjust handsDealt and rounds as needed.
-                                int foo = 0;
+                                auto simResultVector = simulation.Run(1000, simSettings[4]);
+                                simResults.setSimulationInfo(simResultVector[0][0], simResultVector[0][1], playStyleOne, playStyleTwo);
+                                simResults.setAverageGains(simResultVector[2], simResultVector[3], playStyleOne, playStyleTwo, simSettings[2]);
                             }
                             else {
                                 Simulation simulation(simSettings[3], simSettings[1], simSettings[2], simSettings[4], playStyleOne);
-                                simulation.Run(10000, 100);
+                                std::vector<std::vector<long long>> results;
+                                auto simResultVector = simulation.Run(1000, simSettings[4]);
+                                simResults.setSimulationInfo(simResultVector[0][0], simResultVector[0][1], playStyleOne, "N/A");
+                                simResults.setAverageGains(simResultVector[2], simResultVector[3], playStyleOne, "N/A", simSettings[2]);
                             }
                             // After simulation, return to main menu.
                             currState = GameState::SIM_RESULTS;
@@ -154,6 +164,15 @@ int main() {
                             gameScreen = std::make_unique<Game>(1200, 800, playMenu.getSelectedStrategy(), playMenu.getGameSettings());
                             currState = GameState::GAME;
                         }
+                    }
+                }
+                break;
+            
+            case GameState::STATISTICS:
+                statisticsMenu.handleEvent(event, window);
+                if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+                    if (statisticsMenu.getSelectedOption() == StatisticsMenu::Option::BACK) {
+                        currState = GameState::MAIN_MENU;
                     }
                 }
                 break;
@@ -198,6 +217,11 @@ int main() {
         case GameState::PLAY:
             window.draw(settingsBackground);
             playMenu.draw(window);
+            break;
+
+        case GameState::STATISTICS:
+            window.draw(settingsBackground);
+            statisticsMenu.draw(window);
             break;
 
         case GameState::GAME:

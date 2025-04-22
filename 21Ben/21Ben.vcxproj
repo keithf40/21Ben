@@ -150,9 +150,12 @@
     <ClCompile Include="OptimalPlay.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayMenu.cpp" />
+    <ClCompile Include="SimPlayer.cpp" />
     <ClCompile Include="SimulateMenu.cpp" />
     <ClCompile Include="Simulation.cpp" />
     <ClCompile Include="SimulationResults.cpp" />
+    <ClCompile Include="StatisticsMenu.cpp" />
+    <ClCompile Include="StatsTracker.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -166,9 +169,12 @@
     <ClInclude Include="OptimalPlay.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayMenu.h" />
+    <ClInclude Include="SimPlayer.h" />
     <ClInclude Include="SimulateMenu.h" />
     <ClInclude Include="Simulation.h" />
     <ClInclude Include="SimulationResults.h" />
+    <ClInclude Include="StatisticsMenu.h" />
+    <ClInclude Include="StatsTracker.h" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>
