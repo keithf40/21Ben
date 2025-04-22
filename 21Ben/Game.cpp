@@ -90,6 +90,9 @@ Game::Game(float width, float height, std::string countingMethod, std::vector<in
         p.placeBet(minBet);
     }
 
+    //// Start round and set turn order.
+    //startNewRound();
+
     // Position the action buttons under the human's hand.
     // Human hand y is at screenHeight - 250, so we place buttons slightly below that.
     float actionX = (screenWidth / 2.f) - 160.f;
@@ -317,6 +320,8 @@ void Game::finishRound() {
     std::string outcome = "Human: ";
     bool isWin = false;
     bool isDraw = false;
+    int totalMoneyEarned = players[humanIndex].totalWinnings(dealerTotal, dealer.checkBlackjack());
+    players[humanIndex].addWinnings(totalMoneyEarned);
 
     if (players[humanIndex].getCurrentHand().isBlackjack()) {
         outcome += "Blackjack!";
