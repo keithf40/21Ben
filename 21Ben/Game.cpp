@@ -85,11 +85,6 @@ Game::Game(float width, float height, std::string countingMethod, std::vector<in
     // Human at bottom center. X will be recalculated in updateDisplay() so the hand is centered.
     playerPositions[4] = sf::Vector2f(0.f, screenHeight - 250.f);
 
-    // Place an initial bet for each player.
-    for (auto& p : players) {
-        p.placeBet(minBet);
-    }
-
     //// Start round and set turn order.
     //startNewRound();
 
@@ -499,7 +494,7 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
             remainingMoneyText.setString("Remaining: " + std::to_string(rem));
         }
 
-     
+
         // Highlight Quit button
         if (quitButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
             quitButton.setFillColor(sf::Color::Yellow);
@@ -507,7 +502,7 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
         else {
             quitButton.setFillColor(sf::Color::White);
         }
-        
+
         if (!roundInProgress && readyToBet && bettingPhase) {
             if (placeBetButton.getGlobalBounds().contains(mf))
                 placeBetButton.setFillColor(sf::Color::Yellow);
@@ -608,7 +603,7 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
                 float midY = sliderTrack.getPosition().y + sliderTrack.getSize().y / 2.f;
                 sliderKnob.setPosition(left, midY);
                 sliderLabel.setString("Bet: " + std::to_string(currentBetAmount));
-            
+
                 int rem = players[humanIndex].getBalance() - currentBetAmount;
                 remainingMoneyText.setString("Remaining: " + std::to_string(rem));
             }
