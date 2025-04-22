@@ -187,11 +187,6 @@ void Game::startNewRound() {
     currentPlayerTurn = 0;  // Start with the first player.
     botClock.restart();
 
-    // Deal two cards to each player.
-    for (auto& p : players) {
-        p.hit(deck, counter);
-        p.hit(deck, counter);
-    }
     // Deal two cards to dealer.
     dealer.hit(deck, counter, false);
     dealer.hit(deck, counter, true);
