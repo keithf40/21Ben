@@ -90,9 +90,6 @@ Game::Game(float width, float height, std::string countingMethod, std::vector<in
         p.placeBet(minBet);
     }
 
-    //// Start round and set turn order.
-    //startNewRound();
-
     // Position the action buttons under the human's hand.
     // Human hand y is at screenHeight - 250, so we place buttons slightly below that.
     float actionX = (screenWidth / 2.f) - 160.f;
@@ -103,9 +100,6 @@ Game::Game(float width, float height, std::string countingMethod, std::vector<in
     splitButton.setPosition(actionX + 360.f, actionY);
 
     // initial bet defaults to minBet
-    currentBetAmount = minBet;
-
-    // initialize current bet to the minimum
     currentBetAmount = minBet;
 
     sliderTrack.setSize({ 250.f, 5.f });
@@ -142,11 +136,29 @@ Game::Game(float width, float height, std::string countingMethod, std::vector<in
     );
     sliderLabel.setString("Bet: " + std::to_string(currentBetAmount));
 
+    remainingMoneyText.setFont(font);
+    remainingMoneyText.setCharacterSize(30);
+    remainingMoneyText.setFillColor(sf::Color::White);
+    // put it just below the slider:
+    remainingMoneyText.setPosition(
+        sliderTrack.getPosition().x,
+        sliderTrack.getPosition().y + sliderTrack.getSize().y + 10.f
+    );
+    // initial value
+    int startBal = players[humanIndex].getBalance();
+    remainingMoneyText.setString("Remaining: " + std::to_string(startBal - currentBetAmount));
+
     turnsUntilPlayText.setFont(font);
     turnsUntilPlayText.setCharacterSize(40);
     turnsUntilPlayText.setFillColor(sf::Color::White);
     turnsUntilPlayText.setPosition(screenWidth / 2.5, screenHeight / 2 - 20);
     turnsUntilPlayText.setString("");
+
+    countText.setFont(font);
+    countText.setCharacterSize(24);
+    countText.setFillColor(sf::Color::White);
+    countText.setPosition(10.f, 10.f);
+    countText.setString("");
 }
 
 void Game::startNewRound() {
@@ -289,6 +301,13 @@ void Game::updateDisplay() {
 
     // Update message text.
     messageText.setString(message);
+
+    if (strategy != "None") {
+        countText.setString("Count: " + std::to_string(counter.getCount()));
+    }
+    else {
+        countText.setString("");
+    }
 }
 
 void Game::finishRound() {
@@ -448,6 +467,7 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
     // Process mouse and keyboard events.
     if (event.type == sf::Event::MouseMoved) {
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+        sf::Vector2f mf(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
         if (isDraggingSlider) {
             float newX = static_cast<float>(mousePos.x);
             float leftBound = sliderTrack.getPosition().x;
@@ -470,6 +490,8 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
 
             currentBetAmount = quantized;
             sliderLabel.setString("Bet: " + std::to_string(currentBetAmount));
+            int rem = players[humanIndex].getBalance() - currentBetAmount;
+            remainingMoneyText.setString("Remaining: " + std::to_string(rem));
         }
 
      
@@ -480,13 +502,20 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
         else {
             quitButton.setFillColor(sf::Color::White);
         }
-        // Highlight Deal button when round is not in progress.
-        if (!roundInProgress) {
-            if (dealButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
-                dealButton.setFillColor(sf::Color::Yellow);
-            }
-            else {
-                dealButton.setFillColor(sf::Color::White);
+        
+        if (!roundInProgress && readyToBet && bettingPhase) {
+            if (placeBetButton.getGlobalBounds().contains(mf))
+                placeBetButton.setFillColor(sf::Color::Yellow);
+            else
+                placeBetButton.setFillColor(sf::Color::White);
+        }
+        else {
+            // otherwise highlight Deal when not in round
+            if (!roundInProgress) {
+                if (dealButton.getGlobalBounds().contains(mf))
+                    dealButton.setFillColor(sf::Color::Yellow);
+                else
+                    dealButton.setFillColor(sf::Color::White);
             }
         }
         // When round is in progress and it's the human's turn, highlight human action buttons.
@@ -546,6 +575,7 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
                 bettingPhase = false;
                 readyToBet = false;
                 startNewRound();
+                countText.setPosition(10.f, 10.f);
             }
             return;
         }
@@ -554,6 +584,14 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
             if (isTextClicked(dealButton, window)) {
                 readyToBet = true;
                 bettingPhase = true;
+                countText.setFont(font);
+                countText.setCharacterSize(30);
+                countText.setFillColor(sf::Color::White);
+                countText.setPosition(
+                    remainingMoneyText.getPosition().x,
+                    remainingMoneyText.getPosition().y + remainingMoneyText.getCharacterSize() + 10.f
+                );
+                countText.setString("Count: " + std::to_string(counter.getCount()));
                 for (auto& v : playersCardSprites)
                     v.clear();
                 dealerCardSprites.clear();
@@ -565,6 +603,9 @@ void Game::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
                 float midY = sliderTrack.getPosition().y + sliderTrack.getSize().y / 2.f;
                 sliderKnob.setPosition(left, midY);
                 sliderLabel.setString("Bet: " + std::to_string(currentBetAmount));
+            
+                int rem = players[humanIndex].getBalance() - currentBetAmount;
+                remainingMoneyText.setString("Remaining: " + std::to_string(rem));
             }
             return;
         }
@@ -672,6 +713,8 @@ void Game::draw(sf::RenderWindow& window) {
             window.draw(sliderTrack);
             window.draw(sliderKnob);
             window.draw(sliderLabel);
+            window.draw(remainingMoneyText);
+            window.draw(countText);
         }
         else {
             window.draw(dealButton);
@@ -690,6 +733,9 @@ void Game::draw(sf::RenderWindow& window) {
         window.draw(doubleButton);
         window.draw(splitButton);
     }
+
+    if (!countText.getString().isEmpty())
+        window.draw(countText);
 
     // Update bot moves after drawing.
     updateBotMoves();

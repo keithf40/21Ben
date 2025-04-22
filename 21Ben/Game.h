@@ -43,12 +43,14 @@ private:
     sf::Text quitButton;      // Quits the game and returns to main menu.
     sf::Text placeBetButton;
     sf::Text turnsUntilPlayText;
+    sf::Text remainingMoneyText;
 
     int currentBetAmount;
     bool isDraggingSlider = false;
     sf::RectangleShape sliderTrack;
     sf::RectangleShape sliderKnob;
     sf::Text sliderLabel;
+    sf::Text countText;
 
     // Core game components.
     Deck deck;
