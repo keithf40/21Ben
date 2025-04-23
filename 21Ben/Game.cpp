@@ -160,10 +160,7 @@ Game::Game(float width, float height, std::string countingMethod, std::vector<in
 }
 
 void Game::startNewRound() {
-    if (deck.shuffleReady()) {
-        deck.reset();
-        counter.resetCount();
-    }
+    
     dealer.clear();
     for (size_t i = 0; i < players.size(); ++i) {
         players[i].reset();
@@ -356,6 +353,10 @@ void Game::finishRound() {
     roundInProgress = false;
     bettingPhase = false;
     readyToBet = false;
+    if (deck.shuffleReady()) {
+        deck.reset();
+        counter.resetCount();
+    }
 }
 
 void Game::recordGameStats(bool isWin, bool isDraw) {

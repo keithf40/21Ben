@@ -29,7 +29,7 @@ std::vector<std::vector<long long>> Simulation::Run(int handsDealt, int rounds) 
 		players.push_back(foo);
 	}
 
-	std::ofstream outfile("simulation.txt");
+	/*std::ofstream outfile("simulation.txt");
 	if (outfile.is_open()) {
 		outfile << counterOne->getStrategy();
 		if (competingCounts) {
@@ -37,7 +37,7 @@ std::vector<std::vector<long long>> Simulation::Run(int handsDealt, int rounds) 
 		}
 		outfile << "\n";
 	}
-	outfile.close();
+	outfile.close();*/
 	std::vector<long long>foo;
 	std::vector<std::vector<long long>> finalStats(2, foo);
 	finalStats[0].push_back(rounds);
@@ -49,6 +49,7 @@ std::vector<std::vector<long long>> Simulation::Run(int handsDealt, int rounds) 
 	for (int i = 0; i < rounds; i++) {
 		deck->shuffle();
 		counterOne->resetCount();
+		counterTwo->resetCount();
 		balances.clear();
 		for (int j = 0; j < players.size(); j++) {
 			players[j].setBank(startingMoney);
@@ -113,14 +114,14 @@ std::vector<std::vector<long long>> Simulation::Run(int handsDealt, int rounds) 
 			bool dealerBlackjack = dealer.checkBlackjack();
 			int k = 1;
 
-			std::ofstream outfile("simulation.txt", std::ios::app);
+			/*std::ofstream outfile("simulation.txt", std::ios::app);*/
 			
 			long long netGain = players[0].totalWinnings(dealerScore, dealerBlackjack);
 			players[0].addWinnings(netGain);
 			balanceDiff[0] = players[0].getBalance() - balanceDiff[0];
 			balances[0] += balanceDiff[0] * betRatios[0];
-			if (outfile.is_open()) {
-				outfile << std::to_string(players[0].getBalance());
+			if (true) {
+				//outfile << std::to_string(players[0].getBalance());
 				
 				for (int i = 1; i < players.size(); i++) {
 					netGain = players[i].totalWinnings(dealerScore, dealerBlackjack);
@@ -141,7 +142,7 @@ std::vector<std::vector<long long>> Simulation::Run(int handsDealt, int rounds) 
 				outfile << " Count was ";
 				outfile << counterTwoCount;
 				outfile << "\n";*/
-				outfile.close();
+				//outfile.close();
 			}
 			balanceDiff.clear();
 			
