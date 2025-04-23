@@ -87,7 +87,7 @@ void SimulationResults::setAverageGains(const std::vector<long long>& gains1, co
     float totalBarWidth = (style2 != "N/A") ? (2 * barWidth + barSpacing) : barWidth;
 
     float graphBottom = graphY + graphHeight; // y-position of -startingMoney
-    fixedBase = 150;
+    fixedBase = 500;
     float base = -fixedBase; // Used to normalize gain to [0, 2*fixedBase]
 
     for (int i = 0; i < 5; ++i) {
